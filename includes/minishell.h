@@ -15,6 +15,9 @@
 
 # include "../libft/libft.h"
 # include "../gnl/get_next_line.h"
+# include <curses.h>
+# include <term.h>
+# include <stdio.h>
 
 /*              fd[0] - stdin
 				fd[1] - stdout
@@ -28,8 +31,8 @@ typedef struct s_command
 	int redir_flag;
 	int fd[2];
 	int children_num;
-	t_command *child;
-	t_command *onichan;
+	struct s_command *child;
+	struct s_command *onichan;
 } t_command;
 
 typedef struct s_env
@@ -40,6 +43,7 @@ typedef struct s_env
 
 typedef struct s_all
 {
+	char **env_strs;
 	t_list *env;
 	t_command *cmds;
 	

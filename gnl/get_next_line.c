@@ -6,12 +6,13 @@
 /*   By: aemustaf <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/11/17 15:15:50 by aemustaf          #+#    #+#             */
-/*   Updated: 2021/01/31 22:41:18 by aemustaf         ###   ########.fr       */
+/*   Updated: 2020/11/17 15:16:03 by aemustaf         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-
+#include <stdio.h>
+#include <string.h>
 
 static char	*check_remainder(char **remainder, char **line)
 {
@@ -76,4 +77,3 @@ int			get_next_line(int fd, char **line)
 	free(buf);
 	return ((p_new || readed_byte) ? 1 : 0);
 }
-
