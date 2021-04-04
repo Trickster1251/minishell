@@ -41,7 +41,7 @@ char		*ft_substr(char const *s, unsigned int start, size_t len)
 	i = (size_t)start;
 	len = len + i;
 	k = 0;
-	while (i < len)
+	while (i < len && s[i])
 	{
 		s1[k] = s[i];
 		i++;
