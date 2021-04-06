@@ -72,16 +72,78 @@ t_all *init_all(char **env)
 	return (all);
 }
 
+int		ft_putint(int c)
+{
+	write(1, &c, 1);
+	return (c);
+}
+
+char 	*get_env_val(t_list *env, char *key)
+{
+	t_env *tmp;
+
+	while (env)
+	{
+		tmp = env->content;
+		if (!ft_strncmp(tmp->key, key, ft_strlen(key) + 1 ))
+			return (tmp->value);
+		env = env->next;
+	}
+	return (NULL);
+}
+
 int		main(int ac, char **av, char **env)
 {
 	t_all *all;
-	t_env *tmp;
+	int len;
+	char str[2000];
+	struct termios term;
 
 	all = init_all(env);
-	while (all->env)
+	char *term_name = get_env_val(all->env, "TERM");
+	ft_bzero(str, 2000);
+	tcgetattr(0, &term);
+	term.c_lflag &= ~(ECHO);
+	term.c_lflag &= ~(ICANON);
+	tcsetattr(0, TCSANOW, &term);
+	tgetent(0, term_name);
+	tputs("minishell$ ", 1, ft_putint);
+	tputs(save_cursor, 1, ft_putint);
+	while(ft_strncmp(str, "\n", 2))
 	{
-		tmp = all->env->content;
-		printf("%s=%s\n", tmp->key, tmp->value);
-		all->env = all->env->next;
+		len = read(0, str, 100);
+		str[len] = 0;
+		if (!ft_strncmp(str, "\e[A", 5))
+		{
+			tputs(restore_cursor, 1, ft_putint);
+			write(1, "previus", 8);
+			tputs(tigetstr("ed"), 1, ft_putint);
+		}
+		else if (!ft_strncmp(str, "\e[B",  5))
+		{
+			tputs(restore_cursor, 1, ft_putint);
+			write(1, "next", 4);
+			tputs(tigetstr("ed"), 1, ft_putint);
+		}
+		else if (!ft_strncmp(str, "\177", 5))
+		{
+			tputs(cursor_left, 1, ft_putint);
+			tputs(tgetstr("dc", 0), 1, ft_putint);
+		}
+		else if (!ft_strncmp(str, "\e[D", 5))
+		{
+			tputs(cursor_left, 1, ft_putint);
+		}
+		else if (!ft_strncmp(str, "\e[C", 5))
+		{
+			tputs(cursor_right, 1, ft_putint);
+		}
+		else
+			write(1, str, len);
 	}
+	term.c_lflag |= ECHO;
+	term.c_lflag |= ICANON;
+	tcsetattr(0, TCSANOW, &term);
+	write(1, "\n", 1);
+	return (0);
 }
