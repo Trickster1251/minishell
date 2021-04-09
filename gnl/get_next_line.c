@@ -21,12 +21,12 @@ static char	*check_remainder(char **remainder, char **line)
 	p_new = NULL;
 	if (*remainder)
 	{
-		if ((p_new = ft_strchr(*remainder, '\n')))
+		if ((p_new = my_strchr(*remainder, '\n')))
 		{
 			*p_new = '\0';
 			p_new++;
 			*line = *remainder;
-			*remainder = ft_strdup(p_new);
+			*remainder = my_strdup(p_new);
 		}
 		else
 		{
@@ -35,7 +35,7 @@ static char	*check_remainder(char **remainder, char **line)
 		}
 	}
 	else
-		*line = ft_strdup("");
+		*line = my_strdup("");
 	return (p_new);
 }
 
@@ -65,10 +65,10 @@ int			get_next_line(int fd, char **line)
 	while (!p_new && (readed_byte = read(fd, buf, BUFFER_SIZE)))
 	{
 		buf[readed_byte] = '\0';
-		if ((p_new = ft_strchr(buf, '\n')))
+		if ((p_new = my_strchr(buf, '\n')))
 		{
 			*p_new = '\0';
-			if (!(remainder = ft_strdup(++p_new)))
+			if (!(remainder = my_strdup(++p_new)))
 				return (errors(buf));
 		}
 		if (!(*line = my_strjoin(*line, buf)))

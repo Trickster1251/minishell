@@ -46,7 +46,10 @@ typedef struct s_all
 	char **env_strs;
 	t_list *env;
 	t_command *cmds;
-	
+	char **history;
+	int pos;
+	int hist_len;
+	t_list *hist_list;
 } t_all;
 
 

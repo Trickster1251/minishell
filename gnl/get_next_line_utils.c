@@ -51,7 +51,7 @@ char			*my_strjoin(char *s1, char *s2)
 	return (a);
 }
 
-char			*ft_strdup(const char *s1)
+char			*my_strdup(const char *s1)
 {
 	int		len;
 	char	*s2;
@@ -73,7 +73,7 @@ char			*ft_strdup(const char *s1)
 	return (s2);
 }
 
-char			*ft_strchr(const char *s, int c)
+char			*my_strchr(const char *s, int c)
 {
 	char *s1;
 

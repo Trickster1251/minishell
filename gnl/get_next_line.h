@@ -22,5 +22,7 @@
 
 char	*my_strjoin(char *s1, char *s2);
 int		get_next_line(int fd, char **line);
+char	*my_strdup(const char *s1);
+char	*my_strchr(const char *s, int c);
 
 #endif
