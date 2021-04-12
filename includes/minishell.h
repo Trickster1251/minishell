@@ -50,6 +50,8 @@ typedef struct s_all
 	int pos;
 	int hist_len;
 	t_list *hist_list;
+	struct termios term;
+	char *term_name;
 } t_all;
 
 

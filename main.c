@@ -33,33 +33,6 @@ t_list *parse_env(char **env)
 	return (lst);
 }
 
-// int words_len(char **words)
-// {
-// 	int i;
-
-// 	i = 0;
-// 	if (**words == NULL)
-// 		return (0);
-// 	while (words[i])
-// 		i++;
-// 	return (i);
-// }
-
-// char **wordsdup(char** words)
-// {
-// 	char **copy;
-
-// 	int i;
-
-// 	i = words_len(words);
-// 	copy = (char**)ft_calloc(sizeof(char *), i);
-
-// 	while(*words)
-// 	{
-		
-// 	}
-// }
-
 t_all *init_all(char **env)
 {
 	t_all *all;
@@ -68,7 +41,6 @@ t_all *init_all(char **env)
 	if (!all)
 		return (NULL);
 	all->hist_list = NULL;
-	//all->env_strs = ft_strdup(env);
 	all->history = NULL;
 	all->hist_len = 0;
 	all->env = parse_env(env);
@@ -133,8 +105,10 @@ int		read_history(t_all *all)
 	all->hist_list = NULL;
 	while ((bytes = get_next_line(fd, &line)) != 0)
 	{
-		if (line[0] != '\0')
+		if (line[0] != '\0' && line[0] != '\04')
 			ft_lstadd_back(&all->hist_list, ft_lstnew(line));
+		else
+			free(line);
 		if (all->hist_list == NULL)
 		{	
 			close(fd);
@@ -145,8 +119,10 @@ int		read_history(t_all *all)
 	close(fd);
 	if (line)
 	{
-		if (line[0] != '\0')
+		if (line[0] != '\0' && line[0] != '\04')
 			ft_lstadd_back(&all->hist_list, ft_lstnew(line));
+		else
+			free(line);
 	}
 	t_list *tmp = all->hist_list;
 	if (fd < 0 || bytes < 0)
@@ -180,18 +156,20 @@ int		hist_strjoin(t_all *all, char *str)
 {
 	t_list *tmp;
 	int i;
+	char *t;
 
 	i = 0;
 	tmp = ft_lstlast(all->hist_list);
+	if (str[0] == '\04')
+		return (0);
 	if (ft_strncmp(all->history[all->pos], all->history[all->hist_len - 1], ft_strlen(all->history[all->pos])))
+	{
+		t = all->history[all->hist_len - 1];
 		all->history[all->hist_len - 1] = ft_strjoin(all->history[all->pos], str);
+		free(t);
+	}
 	else
-		all->history[all->hist_len - 1] = ft_strjoin(all->history[all->hist_len - 1], str);
-	// while (i < all->pos && tmp->next)
-	// {
-	// 	tmp = tmp->next;
-	// 	i++;
-	// }
+		all->history[all->hist_len - 1] = my_strjoin(all->history[all->hist_len - 1], str);
 	tmp->content = all->history[all->hist_len - 1];
 	return (0);
 }
@@ -216,36 +194,50 @@ void	print_next(t_all *all)
 	ft_putstr_fd(all->history[all->pos], 1);
 }
 
+void	nocanon(t_all *all)
+{
+	all->term_name = get_env_val(all->env, "TERM");
+	tcgetattr(0, &all->term);
+	all->term.c_lflag &= ~(ECHO);
+	all->term.c_lflag &= ~(ICANON);
+	tcsetattr(0, TCSANOW, &all->term);
+	tgetent(0, all->term_name);
+	tputs("minishell$ ", 1, ft_putint);
+	tputs(save_cursor, 1, ft_putint);
+}
+
+int		new_line(t_all *all, char *str)
+{
+	t_list	*tmp;
+
+	if (read_history(all) < 0)
+		return (-1);
+	tmp = ft_lstlast(all->hist_list);
+	if (all->hist_len == 0 || ft_strlen(tmp->content) != 0)
+		ft_lstadd_back(&all->hist_list, ft_lstnew(ft_strdup("")));
+	if (get_hist_array(all) < 0)
+		return (-1);
+	all->pos = all->hist_len - 1;
+	ft_bzero(str, 2000);
+	return (0);
+}
+
+// int		parser(t_all *all)
+// {
+
+// }
 
 int		main(int ac, char **av, char **env)
 {
 	t_all *all;
 	int len;
 	char str[2000];
-	struct termios term;
-	t_list *tmp;
 
 	all = init_all(env);
 	while(str[0] != '\04') 
 	{
-		if (read_history(all) < 0)
-			return (-1);
-		tmp = ft_lstlast(all->hist_list);
-		if (all->hist_len == 0 || ft_strlen(tmp->content) != 0)
-			ft_lstadd_back(&all->hist_list, ft_lstnew(ft_strdup("")));
-		if (get_hist_array(all) < 0)
-			return (-1);
-		  //добавляю новую строку не забудь!
-		all->pos = all->hist_len - 1;
-		ft_bzero(str, 2000);
-		char *term_name = get_env_val(all->env, "TERM");
-		tcgetattr(0, &term);
-		term.c_lflag &= ~(ECHO);
-		term.c_lflag &= ~(ICANON);
-		tcsetattr(0, TCSANOW, &term);
-		tgetent(0, term_name);
-		tputs("minishell$ ", 1, ft_putint);
-		tputs(save_cursor, 1, ft_putint);
+		new_line(all, str);
+		nocanon(all);
 		while (ft_strncmp(str, "\n", 2) && str[0] != '\04')
 		{
 			len = read(0, str, 1000);
@@ -256,7 +248,6 @@ int		main(int ac, char **av, char **env)
 				{
 					tputs(restore_cursor, 1, ft_putint);
 					print_previus(all);
-					//ft_putnbr_fd(all->pos, 1);
 					tputs(tigetstr("ed"), 1, ft_putint);
 				}
 			}
@@ -277,31 +268,24 @@ int		main(int ac, char **av, char **env)
 			}
 			else if (!ft_strncmp(str, "\e[D", 5))
 			{
-				//ft_putnbr_fd(all->pos, 1);
 				if (ft_strlen(all->history[all->pos]) > 0)
 					tputs(cursor_left, 1, ft_putint);
 			}
 			else if (!ft_strncmp(str, "\e[C", 5))
-			{
 				tputs(cursor_right, 1, ft_putint);
-			}
 			else
 			{
-				//ft_putnbr_fd(all->pos, 1);
-				if (ft_strncmp(str, "\n", 2) && str[0] != '\04')
-					if (hist_strjoin(all, str) < 0)
-						return (-1);
-				// else
-				// 	del_line(all);
+				if (hist_strjoin(all, str) < 0)
+					return (-1);
 				write(1, str, len);
 			}
 		}
+		
 		save_history(all);
 	}
-	term.c_lflag |= ECHO;
-	term.c_lflag |= ICANON;
-	tcsetattr(0, TCSANOW, &term);
-	tmp = all->hist_list;
+	all->term.c_lflag |= ECHO;
+	all->term.c_lflag |= ICANON;
+	tcsetattr(0, TCSANOW, &all->term);
 	write(1, "\n", 1);
 	return (0);
 }
