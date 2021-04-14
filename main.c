@@ -222,10 +222,159 @@ int		new_line(t_all *all, char *str)
 	return (0);
 }
 
-// int		parser(t_all *all)
+// char	get_next_char(t_line *src)
 // {
+// 	if (!src->str)
+// 		return (-1);
+// 	if (src->pos < src->len)
+// 		src->pos++;
+// 	return (src->str[src->pos]);
+// }
+
+char	previus_char(t_line *src)
+{
+	char c;
+	int i;
+
+	if (src->pos != 0)
+		i = src->pos - 1;
+	else
+		i = src->pos;
+	return (src->str[i]);
+}
+
+int		shield(t_all *all, t_line *src)
+{
+	int i;
+
+	i = 0;
+	while (src->str[src->pos])
+	{
+		if (src->str[src->pos] == '"' && all->val.in_dqt == 0 && all->val.in_qt == 0 && previus_char(src) != '\\')
+			all->val.in_dqt = 1;
+		else if (src->str[src->pos] == '\'' && all->val.in_qt == 0 && previus_char(src) != '\\')
+			all->val.in_qt = 1;
+		else if (src->str[src->pos] == '"' && all->val.in_dqt == 1 && all->val.in_qt == 0 && previus_char(src) != '\\')
+			all->val.in_dqt = 0;
+		else if (src->str[src->pos] == '\'' && all->val.in_qt == 1 && previus_char(src) != '\\')
+			all->val.in_qt = 0;
+		else if (src->str[src->pos] == '$' && (all->val.in_qt == 1 || previus_char(src) == '\\'))
+			src->str[src->pos] *= -1;
+		else if (src->str[src->pos] == '#' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+			src->str[src->pos] *= -1;
+		else if (src->str[src->pos] == '>' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+				src->str[src->pos] *= -1;
+		else if (src->str[src->pos] == ';' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+			src->str[src->pos] *= -1;
+		else if (src->str[src->pos] == '<' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+			src->str[src->pos] *= -1;
+		else if (src->str[src->pos] == '&' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+			src->str[src->pos] *= -1;
+		else if (src->str[src->pos] == ' ' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+			src->str[src->pos] *= -1;
+		else if (src->str[src->pos] == '(' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+			src->str[src->pos] *= -1;
+		else if (src->str[src->pos] == ')' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+			src->str[src->pos] *= -1;
+		else if (src->str[src->pos] == '|' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+			src->str[src->pos] *= -1;
+		else if (src->str[src->pos] == '"' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+			src->str[src->pos] *= -1;
+		else if (src->str[src->pos] == '\\' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+			src->str[src->pos] *= -1;
+		else if (src->str[src->pos] == '\'' && (previus_char(src) == '\\' || all->val.in_dqt == 1))
+			src->str[src->pos] *= -1;
+		src->pos++; 
+	}
+	if (all->val.in_dqt == 1 || all->val.in_qt == 1)
+	{
+		printf("minishell: quote is not closed\n");
+		return (-1);
+	}
+	return (0);
+}
+
+// int		line_vaidator(t_all *all, t_line *src)
+// {
+// 	int i;
+
 
 // }
+int 	unshield(t_line *src)
+{
+	src->pos = 0;
+	while (src->str[src->pos])
+	{
+		if (src->str[src->pos] < 0)
+		src->str[src->pos] *= -1;
+		src->pos++;
+	}
+	return (0);
+}
+
+char		*ft_charjoin(char const *s1, char c)
+{
+	int		len;
+	int		i;
+	char	*a;
+
+	if (!s1)
+		return (NULL);
+	len = ft_strlen((char *)s1) + 1;
+	a = (char*)malloc((len + 1) * sizeof(char));
+	i = 0;
+	if (a == NULL)
+		return (NULL);
+	while (s1[i])
+	{
+		a[i] = s1[i];
+		i++;
+	}
+	a[i] = c;
+	a[i + 1] = '\0';
+	free ((char *)s1);
+	return (a);
+}
+
+int		remove_ch(t_line *src)
+{
+	char *tmp;
+
+	tmp = ft_strdup("");
+	if (!tmp)
+		return (-1);
+	src->pos = 0;
+	while (src->str[src->pos])
+	{
+		if (src->str[src->pos] != '\\' && src->str[src->pos] != '"' && src->str[src->pos] != '\'' && src->str[src->pos] != '\n')
+		{
+			tmp = ft_charjoin(tmp, src->str[src->pos]);
+			if (!tmp)
+				return (-1);
+		}
+		src->pos++;
+	}
+	free(src->str);
+	src->str = tmp;
+	return (0);
+}
+
+int		parser(t_all *all)
+{
+	t_line src;
+	
+	ft_bzero(&all->val, sizeof(all->val));
+	src.str = ft_strdup(all->history[all->hist_len - 1]);
+	src.len = ft_strlen(src.str);
+	src.pos = 0;
+	int ret = shield(all, &src);
+	ret = remove_ch(&src);
+	//Символы удалены, далее подставить переменные
+	//Почему-то не все работает в экранировании >>
+	unshield(&src);
+	printf("%s\n", src.str);
+	return (ret);
+}	
 
 int		main(int ac, char **av, char **env)
 {
@@ -280,7 +429,7 @@ int		main(int ac, char **av, char **env)
 				write(1, str, len);
 			}
 		}
-		
+		parser(all);
 		save_history(all);
 	}
 	all->term.c_lflag |= ECHO;
