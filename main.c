@@ -246,8 +246,14 @@ char	previus_char(t_line *src)
 int		shield(t_all *all, t_line *src)
 {
 	int i;
+	int k;
+	int redir;
+	int rev_redir;
 
 	i = 0;
+	k = 0;
+	redir = 0;
+	rev_redir = 0;
 	while (src->str[src->pos])
 	{
 		if (src->str[src->pos] == '"' && all->val.in_dqt == 0 && all->val.in_qt == 0 && previus_char(src) != '\\')
@@ -276,7 +282,7 @@ int		shield(t_all *all, t_line *src)
 			src->str[src->pos] *= -1;
 		else if (src->str[src->pos] == ')' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
 			src->str[src->pos] *= -1;
-		else if (src->str[src->pos] == '|' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+		else if (src->str[src->pos] == '|' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1)) //добавить "'$PATH'"
 			src->str[src->pos] *= -1;
 		else if (src->str[src->pos] == '"' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
 			src->str[src->pos] *= -1;
@@ -284,6 +290,71 @@ int		shield(t_all *all, t_line *src)
 			src->str[src->pos] *= -1;
 		else if (src->str[src->pos] == '\'' && (previus_char(src) == '\\' || all->val.in_dqt == 1))
 			src->str[src->pos] *= -1;
+		if ((src->str[src->pos] == '|' || src->str[src->pos] == '>' || src->str[src->pos] == '<')
+		&& src->pos == src->len - 2)
+		{
+			printf("minishell: syntax error near unexpected token `newline'\n");
+			return (-1);
+		}
+		if (src->str[src->pos] == '|' && src->pos == 0)
+		{
+			printf("minishell: syntax error near unexpected token `|'\n");
+			return (-1);
+		}
+		if (src->str[src->pos] == '&')
+		{
+			printf("minishell: syntax error unexpected token `&'\n");
+			return (-1);
+		}
+		if (src->str[src->pos] == '|')
+		{
+			k++;
+			if (k > 1)
+			{
+				printf("minishell: syntax error near unexpected token `|'\n");
+				return (-1);
+			}
+		}
+		else
+			k = 0;
+		if (src->str[src->pos] == '>')
+		{
+			redir++;
+			if (redir > 2)
+			{
+				printf("minishell: syntax error near unexpected token `>'\n");
+				return (-1);
+			}
+			if (src->str[src->pos + 1] == '>' && previus_char(src) == '<')
+			{
+				printf("minishell: syntax error near unexpected token `<'\n");
+				return (-1);
+			}
+			if (src->str[src->pos + 1] == '<')
+			{
+				printf("minishell: syntax error near unexpected token `<'\n");
+				return (-1);
+			}
+		}
+		else
+			redir = 0;
+		if (src->str[src->pos] == '<')
+		{
+			rev_redir++;
+			if (rev_redir > 2)
+			{
+				printf("minishell: syntax error near unexpected token `<'\n");
+				return (-1);
+			}
+			
+			if (src->str[src->pos + 1] == '>' && previus_char(src) == '<')
+			{
+				printf("minishell: syntax error near unexpected token `<'\n");
+				return (-1);
+			}
+		}
+		else
+			rev_redir = 0;
 		src->pos++; 
 	}
 	if (all->val.in_dqt == 1 || all->val.in_qt == 1)
@@ -300,14 +371,16 @@ int		shield(t_all *all, t_line *src)
 
 
 // }
-int 	unshield(t_line *src)
+int 	unshield(char *str)
 {
-	src->pos = 0;
-	while (src->str[src->pos])
+	int i;
+	
+	i = 0;
+	while (str[i])
 	{
-		if (src->str[src->pos] < 0)
-		src->str[src->pos] *= -1;
-		src->pos++;
+		if (str[i] < 0)
+			str[i] *= -1;
+		i++;
 	}
 	return (0);
 }
@@ -359,6 +432,61 @@ int		remove_ch(t_line *src)
 	return (0);
 }
 
+// int		simple_cmd(t_all *all, char *str)
+// {
+// 	int num;
+// 	int i;
+// 	int pipe_num;
+// 	int redir_num;
+// 	int len;
+
+// 	num = 0;
+// 	i = 0;
+// 	pipe_num = 0;
+// 	len = ft_strlen(str);
+// 	all->cmds = (t_command*)malloc(sizeof(t_command));
+// 	all->cmds->args = (char**)malloc(sizeof(char*) * 1);
+// 	if (!all->cmds || !all->cmds->args)
+// 		return (-1);
+// 	while (str[i])
+// 	{
+
+// 	}
+// }
+
+int		make_cmd(t_all *all)
+{
+	char **cmds;
+	char **childs;
+	int i;
+	int j;
+	char *d_pointer;
+	char *tmp1;
+	char *tmp2;
+
+	i = 0;
+	d_pointer = NULL;
+	cmds = ft_split(all->src->str, ';');
+	while(cmds[i])
+	{
+		if ((d_pointer = ft_strchr(cmds[i], '$')))
+		{
+			tmp1 = ft_substr(cmds[i], 0, d_pointer - cmds[i]);
+			tmp2 = get_env_val(all->env, d_pointer + 1);
+			tmp1 = my_strjoin(tmp1, tmp2);
+			free(cmds[i]);
+			cmds[i] = tmp1;
+		}
+		unshield(cmds[i]);
+		printf("%s\n", cmds[i]);
+		i++;
+	}
+	// free(cmds[0]);
+	// free(cmds);               для теста
+	//printf("\n");
+	return (0);
+}
+
 int		parser(t_all *all)
 {
 	t_line src;
@@ -371,8 +499,11 @@ int		parser(t_all *all)
 	ret = remove_ch(&src);
 	//Символы удалены, далее подставить переменные
 	//Почему-то не все работает в экранировании >>
-	unshield(&src);
-	printf("%s\n", src.str);
+	all->src = &src;
+	make_cmd(all);
+	free(src.str);
+	// unshield(&src);
+	// printf("%s\n", src.str);
 	return (ret);
 }	
 

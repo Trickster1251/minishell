@@ -18,14 +18,11 @@
 # include <curses.h>
 # include <term.h>
 # include <stdio.h>
-# define SHIELD -128
-# define UNSHIELD 127
 
 /*              fd[0] - stdin
 				fd[1] - stdout
 				args[0] - command name
 				command->child - next command after pipe (if it exist)
-				command->onichan - next command after ";" nano desu! Nippa~⭑
 */
 typedef struct s_command
 {
@@ -33,8 +30,7 @@ typedef struct s_command
 	int redir_flag;
 	int fd[2];
 	int children_num;
-	struct s_command *child;
-	struct s_command *onichan;
+	// struct s_command *child;
 } t_command;
 
 typedef struct s_env
