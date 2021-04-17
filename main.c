@@ -454,6 +454,25 @@ int		remove_ch(t_line *src)
 // 	}
 // }
 
+char *end_var(char *s)
+{
+	char *s1;
+	char *tmp;
+
+	s1 = s;
+	while(*s1 && (ft_isalnum(*s1) || *s1 == '_'))
+		s1++;
+	tmp = ft_substr(s, 0, s1 - s);
+	return (tmp);
+}
+
+char 	*after_var(char *s)
+{
+	while(*s && (ft_isalnum(*s) || *s == '_'))
+		s++;
+	return (s);
+}
+
 int		make_cmd(t_all *all)
 {
 	char **cmds;
@@ -463,6 +482,8 @@ int		make_cmd(t_all *all)
 	char *d_pointer;
 	char *tmp1;
 	char *tmp2;
+	char *tmp_3;
+	char *end;
 
 	i = 0;
 	d_pointer = NULL;
@@ -471,12 +492,21 @@ int		make_cmd(t_all *all)
 	{
 		if ((d_pointer = ft_strchr(cmds[i], '$')))
 		{
-			tmp1 = ft_substr(cmds[i], 0, d_pointer - cmds[i]);
-			tmp2 = get_env_val(all->env, d_pointer + 1);
-			tmp1 = my_strjoin(tmp1, tmp2);
-			free(cmds[i]);
-			cmds[i] = tmp1;
+			end = end_var(d_pointer + 1);
+			if ((tmp2 = get_env_val(all->env, end)))
+			{
+				tmp1 = ft_substr(cmds[i], 0, d_pointer - cmds[i]);
+				tmp1 = my_strjoin(tmp1, tmp2);
+				tmp1 = my_strjoin(tmp1, after_var(d_pointer + 1));
+				free(cmds[i]);
+				cmds[i] = tmp1;
+			}
+			else
+				cmds[i] = after_var(d_pointer + 1);
 		}
+		//удалить лишнее
+		//проверить случай echo |    ;
+		//$PATH$PATH -некоректно обрабатывает
 		unshield(cmds[i]);
 		printf("%s\n", cmds[i]);
 		i++;
@@ -496,9 +526,8 @@ int		parser(t_all *all)
 	src.len = ft_strlen(src.str);
 	src.pos = 0;
 	int ret = shield(all, &src);
-	ret = remove_ch(&src);
-	//Символы удалены, далее подставить переменные
-	//Почему-то не все работает в экранировании >>
+	//ret = remove_ch(&src);
+	//надо удалить символы
 	all->src = &src;
 	make_cmd(all);
 	free(src.str);
