@@ -27,9 +27,7 @@
 typedef struct s_command
 {
 	char **args;
-	int redir_flag;
 	int fd[2];
-	int children_num;
 	// struct s_command *child;
 } t_command;
 

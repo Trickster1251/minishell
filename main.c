@@ -288,7 +288,7 @@ int		shield(t_all *all, t_line *src)
 			src->str[src->pos] *= -1;
 		else if (src->str[src->pos] == '\\' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
 			src->str[src->pos] *= -1;
-		else if (src->str[src->pos] == '\'' && (previus_char(src) == '\\' || all->val.in_dqt == 1))
+		if (src->str[src->pos] == '\'' && (previus_char(src) == '\\' || all->val.in_dqt == 1))
 			src->str[src->pos] *= -1;
 		if ((src->str[src->pos] == '|' || src->str[src->pos] == '>' || src->str[src->pos] == '<')
 		&& src->pos == src->len - 2)
@@ -473,6 +473,281 @@ char 	*after_var(char *s)
 	return (s);
 }
 
+int		print_merror(t_all *all)
+{
+	printf("minishell: memmory allocate error\n");
+	return (-1);
+}
+
+int		argv_len(char **argv)
+{
+	int i;
+
+	i = 0;
+	while (argv[i])
+		i++;
+	return (i);
+}
+
+int		check_argv(t_all *all, char **argv)
+{
+	int i;
+	int j;
+	int k;
+	char c;
+
+	i = 0;
+	j = 0;
+	while (argv[i])
+	{
+		k = 0;
+		j = 0;
+		while (argv[i][j])
+		{
+			if ((0 == k || 3 == k) && (argv[i][j] == '<' || argv[i][j] == '>'))
+			{
+				c = argv[i][j];
+				k = 1;
+			}
+			if (argv[i][j] == ' ' && k == 0)
+				k = 2;
+			if (ft_isalnum(argv[i][j]) || argv[i][j] == '_' || '$' == argv[i][j])
+				k = 3;
+			j++;
+		}
+		if (k == 1)
+		{	
+			printf("minishell: syntax error near unexpected token `%c'\n", c);
+			return(-1);
+		}
+		if (k == 2 || j == 0)
+		{
+			printf("minishell: error multiline command\n");
+			return (-1);
+		}
+		i++;
+	}
+	return (0);
+}
+
+char	**realoc_argv(char **src, size_t size)
+{
+	char **new;
+
+	if (src == NULL)
+		return (NULL);
+	new = (char**)malloc(size);
+	if (!new)
+		return (NULL);
+	ft_memcpy(new, src, sizeof(src));
+	free(src);
+	return(new);
+}
+
+char	**arg_join(t_all *all, char **argv, char *str)
+{
+	char **tmp;
+	int len;
+
+	if (argv == NULL)
+	{
+		argv = (char**)malloc(sizeof (char*) * 2);
+		if (!argv)
+			return (NULL);
+		argv[1] = NULL;
+		argv[0] = str;
+		tmp = argv;
+	}
+	/* len = 10 {q, q, q, q, q, q, q, q, q, q, NULL}
+											9  10 11
+		12		{q, q, q, q, q, q, q, q, q, q, n, NULL}							*/
+	else
+	{
+		len = argv_len(argv);
+		tmp = realoc_argv(argv, sizeof(char*) * (size_t)(len + 2));
+		if (!tmp)
+		{
+			print_merror(all);
+			return (NULL);
+		}
+		tmp[len] = str;
+		tmp[len + 1] = NULL;
+	}
+	return (tmp);
+}
+
+char**	tokenize(char *str, t_all *all)
+{
+	int i;
+	char **res;
+	char *tmp;
+	char *tmp_redir;
+	char *str_tmp;
+
+	i = 0;
+	res = NULL;
+	str_tmp = ft_strtrim(str, " ");
+	printf("%s\n", str_tmp);
+	tmp = ft_strdup("");
+	while(str_tmp[i])
+	{
+		tmp_redir = NULL;
+		if (!tmp)
+		{
+			print_merror(all);
+			return (NULL);
+		}
+		if (str_tmp[i] == ' ')
+		{
+			res = arg_join(all, res, tmp);
+			if (!tmp)
+			{
+				print_merror(all);
+				return (NULL);
+			}
+			tmp = ft_strdup("");
+		}
+		if (str_tmp[i] != ' ' && str_tmp[i] != '<' && str_tmp[i] != '>')
+		{
+			tmp = ft_charjoin(tmp, str_tmp[i]);
+			if (!tmp)
+			{
+				print_merror(all);
+				return (NULL);
+			}
+		}
+		if (str_tmp[i + 1] == '\0')
+		{
+			res = arg_join(all, res, tmp);
+			if (!tmp)
+			{
+				print_merror(all);
+				return (NULL);
+			}
+			tmp = ft_strdup("");
+		}
+		if (str_tmp[i] == '<')
+		{
+			if (str_tmp[i + 1] == '<')
+			{
+				tmp_redir = ft_strdup("<<");
+				if (!tmp_redir)
+				{
+					print_merror(all);
+					return (NULL);
+				}
+			}
+			else
+			{
+				tmp_redir = ft_strdup("<");
+				if (!tmp_redir)
+				{
+					print_merror(all);
+					return (NULL);
+				}
+			}
+			res = arg_join(all, res, tmp_redir);
+			tmp = ft_strdup("");
+		}
+		if (str_tmp[i] == '>')
+		{
+			if (str_tmp[i + 1] == '>')
+			{
+				tmp_redir = ft_strdup(">>");
+				if (!tmp_redir)
+				{
+					print_merror(all);
+					return (NULL);
+				}
+				i++;
+			}
+			else
+			{
+				tmp_redir = ft_strdup(">");
+				if (!tmp_redir)
+				{
+					print_merror(all);
+					return (NULL);
+				}
+			}
+			res = arg_join(all, res, tmp_redir);
+			tmp = ft_strdup("");
+		}
+		i++;
+	}
+	return (res);
+}
+
+int		m_struct(t_all *all, char **argv) //ошибка
+{
+	int i;
+
+	all->cmds = (t_command*)malloc(sizeof(t_command) * all->cmds_num);
+	if (!all->cmds)
+		return(print_merror(all));
+	i = 0;
+	while(i < all->cmds_num)
+	{
+		all->cmds[i].args = argv;
+		i++;
+	}
+	return (0);
+}
+
+void	print_command(t_all *all)
+{
+	int i;
+	int j;
+
+	i = 0;
+	while (i < all->cmds_num)
+	{
+		j = 0;
+		while (all->cmds[i].args[j])
+		{
+			printf("%s ", all->cmds[i].args[j]);
+			j++;
+		}
+		i++;
+	}
+}
+
+int		make_struct(t_all *all, char *str)
+{
+	char **argv;
+	int i;
+	char **new_argv;
+	char ***cmds;
+
+	i = 0;
+	argv = ft_split(str, '|');
+	if (!argv)
+		return (print_merror(all));
+	all->cmds_num = argv_len(argv);
+	if (check_argv(all, argv) < 0)
+		return (-1);
+	cmds = (char***)malloc(sizeof(char**) * all->cmds_num + 1);
+	cmds[all->cmds_num] = NULL;
+	while (argv[i])
+	{
+		new_argv = tokenize(argv[i], all);
+		if (!new_argv)
+			return (-1);
+		cmds[i] = new_argv;
+		i++;
+	}
+	//execute
+	i = 0;
+	while (i < all->cmds_num)
+	{
+		if (!m_struct(all, cmds[i]))
+			return (print_merror(all)); //ЪУЪ!
+		i++;
+	}
+	print_command(all); 
+	return (0);
+}
+
 int		make_cmd(t_all *all)
 {
 	char **cmds;
@@ -490,7 +765,7 @@ int		make_cmd(t_all *all)
 	cmds = ft_split(all->src->str, ';');
 	while(cmds[i])
 	{
-		if ((d_pointer = ft_strchr(cmds[i], '$')))
+		while ((d_pointer = ft_strchr(cmds[i], '$')))
 		{
 			end = end_var(d_pointer + 1);
 			if ((tmp2 = get_env_val(all->env, end)))
@@ -498,21 +773,39 @@ int		make_cmd(t_all *all)
 				tmp1 = ft_substr(cmds[i], 0, d_pointer - cmds[i]);
 				tmp1 = my_strjoin(tmp1, tmp2);
 				tmp1 = my_strjoin(tmp1, after_var(d_pointer + 1));
+				if (!tmp1 || !end)
+					return (print_merror(all));
 				free(cmds[i]);
 				cmds[i] = tmp1;
 			}
 			else
-				cmds[i] = after_var(d_pointer + 1);
+			{
+				tmp1 = ft_substr(cmds[i], 0, d_pointer - cmds[i]);
+				if (!tmp1)
+						return (print_merror(all));
+				if (ft_isalnum((int)*(d_pointer + 1)) || (char)*(d_pointer + 1) == '_')
+					tmp1 = my_strjoin(tmp1, after_var(d_pointer + 1));
+				else
+				{
+					*d_pointer *= -1; // ТАК НАДО
+					tmp1 = my_strjoin(tmp1, d_pointer);
+					if (!tmp1)
+						return (print_merror(all));
+				}
+				cmds[i] = tmp1;
+			}
+			free(end);
 		}
 		//удалить лишнее
 		//проверить случай echo |    ;
 		//$PATH$PATH -некоректно обрабатывает
 		unshield(cmds[i]);
-		printf("%s\n", cmds[i]);
+		make_struct(all, cmds[i]);
+		//printf("%s\n", cmds[i]);
 		i++;
 	}
 	// free(cmds[0]);
-	// free(cmds);               для теста
+	//free(cmds);              // для теста
 	//printf("\n");
 	return (0);
 }
@@ -526,7 +819,7 @@ int		parser(t_all *all)
 	src.len = ft_strlen(src.str);
 	src.pos = 0;
 	int ret = shield(all, &src);
-	//ret = remove_ch(&src);
+	ret = remove_ch(&src);
 	//надо удалить символы
 	all->src = &src;
 	make_cmd(all);
@@ -536,65 +829,77 @@ int		parser(t_all *all)
 	return (ret);
 }	
 
-int		main(int ac, char **av, char **env)
+int main(int ac, char **av, char **env)
 {
 	t_all *all;
-	int len;
 	char str[2000];
 
 	all = init_all(env);
-	while(str[0] != '\04') 
-	{
-		new_line(all, str);
-		nocanon(all);
-		while (ft_strncmp(str, "\n", 2) && str[0] != '\04')
-		{
-			len = read(0, str, 1000);
-			str[len] = 0;
-			if (!ft_strncmp(str, "\e[A", 5))
-			{
-				if (all->hist_len > 1)
-				{
-					tputs(restore_cursor, 1, ft_putint);
-					print_previus(all);
-					tputs(tigetstr("ed"), 1, ft_putint);
-				}
-			}
-			else if (!ft_strncmp(str, "\e[B", 5))
-			{
-				tputs(restore_cursor, 1, ft_putint);
-				print_next(all);
-				tputs(tigetstr("ed"), 1, ft_putint);
-			}
-			else if (!ft_strncmp(str, "\177", 5))
-			{
-				if (ft_strlen(all->history[all->pos]) > 0)
-				{
-					tputs(cursor_left, 1, ft_putint);
-					all->history[all->pos][ft_strlen(all->history[all->pos]) - 1] = '\0';
-					tputs(tgetstr("dc", 0), 1, ft_putint);
-				}
-			}
-			else if (!ft_strncmp(str, "\e[D", 5))
-			{
-				if (ft_strlen(all->history[all->pos]) > 0)
-					tputs(cursor_left, 1, ft_putint);
-			}
-			else if (!ft_strncmp(str, "\e[C", 5))
-				tputs(cursor_right, 1, ft_putint);
-			else
-			{
-				if (hist_strjoin(all, str) < 0)
-					return (-1);
-				write(1, str, len);
-			}
-		}
-		parser(all);
-		save_history(all);
-	}
-	all->term.c_lflag |= ECHO;
-	all->term.c_lflag |= ICANON;
-	tcsetattr(0, TCSANOW, &all->term);
-	write(1, "\n", 1);
-	return (0);
+	new_line(all, str);
+	all->pos--;
+	all->hist_len--;
+	parser(all);
 }
+
+// int		main(int ac, char **av, char **env)
+// {
+// 	t_all *all;
+// 	int len;
+// 	char str[2000];
+
+// 	all = init_all(env);
+// 	while(str[0] != '\04') 
+// 	{
+// 		new_line(all, str);
+// 		nocanon(all);
+// 		while (ft_strncmp(str, "\n", 2) && str[0] != '\04')
+// 		{
+// 			len = read(0, str, 1000);
+// 			str[len] = 0;
+// 			if (!ft_strncmp(str, "\e[A", 5))
+// 			{
+// 				if (all->hist_len > 1)
+// 				{
+// 					tputs(restore_cursor, 1, ft_putint);
+// 					print_previus(all);
+// 					tputs(tigetstr("ed"), 1, ft_putint);
+// 				}
+// 			}
+// 			else if (!ft_strncmp(str, "\e[B", 5))
+// 			{
+// 				tputs(restore_cursor, 1, ft_putint);
+// 				print_next(all);
+// 				tputs(tigetstr("ed"), 1, ft_putint);
+// 			}
+// 			else if (!ft_strncmp(str, "\177", 5))
+// 			{
+// 				if (ft_strlen(all->history[all->pos]) > 0)
+// 				{
+// 					tputs(cursor_left, 1, ft_putint);
+// 					all->history[all->pos][ft_strlen(all->history[all->pos]) - 1] = '\0';
+// 					tputs(tgetstr("dc", 0), 1, ft_putint);
+// 				}
+// 			}
+// 			else if (!ft_strncmp(str, "\e[D", 5))
+// 			{
+// 				if (ft_strlen(all->history[all->pos]) > 0)
+// 					tputs(cursor_left, 1, ft_putint);
+// 			}
+// 			else if (!ft_strncmp(str, "\e[C", 5))
+// 				tputs(cursor_right, 1, ft_putint);
+// 			else
+// 			{
+// 				if (hist_strjoin(all, str) < 0)
+// 					return (-1);
+// 				write(1, str, len);
+// 			}
+// 		}
+// 		parser(all);
+// 		save_history(all);
+// 	}
+// 	all->term.c_lflag |= ECHO;
+// 	all->term.c_lflag |= ICANON;
+// 	tcsetattr(0, TCSANOW, &all->term);
+// 	write(1, "\n", 1);
+// 	return (0);
+// }
