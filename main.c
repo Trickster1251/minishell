@@ -44,6 +44,8 @@ t_all *init_all(char **env)
 	all->history = NULL;
 	all->hist_len = 0;
 	all->env = parse_env(env);
+	all->cmds = NULL;
+	all->src = NULL;
 	return (all);
 }
 
@@ -267,6 +269,8 @@ int		shield(t_all *all, t_line *src)
 		else if (src->str[src->pos] == '$' && (all->val.in_qt == 1 || previus_char(src) == '\\'))
 			src->str[src->pos] *= -1;
 		else if (src->str[src->pos] == '#' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+			src->str[src->pos] *= -1;
+		else if (src->str[src->pos] == ' ' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
 			src->str[src->pos] *= -1;
 		else if (src->str[src->pos] == '>' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
 				src->str[src->pos] *= -1;
@@ -530,16 +534,23 @@ int		check_argv(t_all *all, char **argv)
 	return (0);
 }
 
-char	**realoc_argv(char **src, size_t size)
+char	**realoc_argv(char **src)
 {
 	char **new;
+	int len;
+	int i;
 
-	if (src == NULL)
-		return (NULL);
-	new = (char**)malloc(size);
-	if (!new)
-		return (NULL);
-	ft_memcpy(new, src, sizeof(src));
+	i = 0;
+	len = argv_len(src);
+	new = (char**)malloc(sizeof(char*) * (len + 2));
+	char *s;
+	while (i < len)
+	{
+		s = src[i];
+		new[i] = src[i];
+		i++;
+	}
+	new[len + 1] = NULL;
 	free(src);
 	return(new);
 }
@@ -548,6 +559,7 @@ char	**arg_join(t_all *all, char **argv, char *str)
 {
 	char **tmp;
 	int len;
+	char *s;
 
 	if (argv == NULL)
 	{
@@ -564,14 +576,14 @@ char	**arg_join(t_all *all, char **argv, char *str)
 	else
 	{
 		len = argv_len(argv);
-		tmp = realoc_argv(argv, sizeof(char*) * (size_t)(len + 2));
+		tmp = realoc_argv(argv);
 		if (!tmp)
 		{
 			print_merror(all);
 			return (NULL);
 		}
+		unshield(str);
 		tmp[len] = str;
-		tmp[len + 1] = NULL;
 	}
 	return (tmp);
 }
@@ -587,7 +599,6 @@ char**	tokenize(char *str, t_all *all)
 	i = 0;
 	res = NULL;
 	str_tmp = ft_strtrim(str, " ");
-	printf("%s\n", str_tmp);
 	tmp = ft_strdup("");
 	while(str_tmp[i])
 	{
@@ -599,13 +610,19 @@ char**	tokenize(char *str, t_all *all)
 		}
 		if (str_tmp[i] == ' ')
 		{
-			res = arg_join(all, res, tmp);
-			if (!tmp)
+			if (i > 0 && str_tmp[i - 1] != ' ' && str_tmp[i - 1] != '<' && str_tmp[i - 1] != '>')
 			{
-				print_merror(all);
-				return (NULL);
+				res = arg_join(all, res, tmp);
+				if (!tmp)
+				{
+					print_merror(all);
+					return (NULL);
+				}
+				tmp = ft_strdup("");
+				while (str_tmp[i] && str_tmp[i] == ' ')
+					i++;
+				continue ;
 			}
-			tmp = ft_strdup("");
 		}
 		if (str_tmp[i] != ' ' && str_tmp[i] != '<' && str_tmp[i] != '>')
 		{
@@ -616,7 +633,7 @@ char**	tokenize(char *str, t_all *all)
 				return (NULL);
 			}
 		}
-		if (str_tmp[i + 1] == '\0')
+		if (str_tmp[i + 1] == '\0' && str_tmp[i] != '<' && str_tmp[i] != '>' && str_tmp[i] != ' ')
 		{
 			res = arg_join(all, res, tmp);
 			if (!tmp)
@@ -624,7 +641,6 @@ char**	tokenize(char *str, t_all *all)
 				print_merror(all);
 				return (NULL);
 			}
-			tmp = ft_strdup("");
 		}
 		if (str_tmp[i] == '<')
 		{
@@ -636,6 +652,7 @@ char**	tokenize(char *str, t_all *all)
 					print_merror(all);
 					return (NULL);
 				}
+				i++;
 			}
 			else
 			{
@@ -646,8 +663,14 @@ char**	tokenize(char *str, t_all *all)
 					return (NULL);
 				}
 			}
-			res = arg_join(all, res, tmp_redir);
-			tmp = ft_strdup("");
+			if (!ft_strncmp(tmp, "", 2))
+				res = arg_join(all, res, tmp_redir);
+			else
+			{
+				res = arg_join(all, res, tmp);
+				res = arg_join(all, res, tmp_redir);
+				tmp = ft_strdup("");
+			}
 		}
 		if (str_tmp[i] == '>')
 		{
@@ -670,15 +693,25 @@ char**	tokenize(char *str, t_all *all)
 					return (NULL);
 				}
 			}
-			res = arg_join(all, res, tmp_redir);
-			tmp = ft_strdup("");
+			if (!ft_strncmp(tmp, "", 2))
+				res = arg_join(all, res, tmp_redir);
+			else
+			{
+				res = arg_join(all, res, tmp);
+				res = arg_join(all, res, tmp_redir);
+				tmp = ft_strdup("");
+			}
 		}
 		i++;
 	}
+	free(str_tmp);
+	//free(tmp);
+	free(str);
+	//free(tmp_redir);
 	return (res);
 }
 
-int		m_struct(t_all *all, char **argv) //ошибка
+int		m_struct(t_all *all, char ***argv) //ошибка
 {
 	int i;
 
@@ -688,7 +721,7 @@ int		m_struct(t_all *all, char **argv) //ошибка
 	i = 0;
 	while(i < all->cmds_num)
 	{
-		all->cmds[i].args = argv;
+		all->cmds[i].args = argv[i];
 		i++;
 	}
 	return (0);
@@ -698,6 +731,7 @@ void	print_command(t_all *all)
 {
 	int i;
 	int j;
+	char *s;
 
 	i = 0;
 	while (i < all->cmds_num)
@@ -705,10 +739,35 @@ void	print_command(t_all *all)
 		j = 0;
 		while (all->cmds[i].args[j])
 		{
-			printf("%s ", all->cmds[i].args[j]);
+			s = all->cmds[i].args[j];
+			printf("%s\n", s);
 			j++;
 		}
 		i++;
+	}
+}
+
+void	free_cmd(t_all *all)
+{
+	int i;
+	int j;
+
+	i = 0;
+	if (all->cmds)
+	{
+		while (i < all->cmds_num)
+		{
+			j = 0;
+			while(all->cmds[i].args[j])
+			{
+				free(all->cmds[i].args[j]);
+				j++;
+			}
+			free(all->cmds[i].args);
+			i++;
+		}
+		free(all->cmds);
+		all->cmds = NULL;
 	}
 }
 
@@ -726,7 +785,9 @@ int		make_struct(t_all *all, char *str)
 	all->cmds_num = argv_len(argv);
 	if (check_argv(all, argv) < 0)
 		return (-1);
-	cmds = (char***)malloc(sizeof(char**) * all->cmds_num + 1);
+	cmds = (char***)malloc(sizeof(char**) * (all->cmds_num + 1));
+	if (!cmds)
+		return(print_merror(all));
 	cmds[all->cmds_num] = NULL;
 	while (argv[i])
 	{
@@ -738,26 +799,74 @@ int		make_struct(t_all *all, char *str)
 	}
 	//execute
 	i = 0;
-	while (i < all->cmds_num)
-	{
-		if (!m_struct(all, cmds[i]))
-			return (print_merror(all)); //ЪУЪ!
-		i++;
-	}
-	print_command(all); 
+	if (m_struct(all, cmds) < 0)
+		return (print_merror(all)); //ЪУЪ!
+	print_command(all);
+	free(argv);
+	free (cmds);
+	free_cmd(all);
 	return (0);
+}
+
+char	*var_replace(t_all *all, char *str, char *d_pointer, char *end)
+{
+	char *tmp1;
+	char *tmp2;
+
+	if ((tmp2 = get_env_val(all->env, end)))
+	{
+		tmp1 = ft_substr(str, 0, d_pointer - str);
+		tmp1 = my_strjoin(tmp1, tmp2);
+		tmp1 = my_strjoin(tmp1, after_var(d_pointer + 1));
+		if (!tmp1 || !end)
+		{
+			print_merror(all);
+			return (NULL);
+		}
+		free(str);
+		str = tmp1;
+	}
+	return (str);
+}
+
+char	*if_no_var(t_all *all, char *str, char *d_pointer, char *end)
+{
+	char *tmp1;
+	char *tmp2;
+
+	if (!(tmp2 = get_env_val(all->env, end)))
+	{
+		tmp1 = ft_substr(str, 0, d_pointer - str);
+		if (!tmp1)
+		{
+			print_merror(all);
+			return (NULL);
+		}
+		if (ft_isalnum((int)*(d_pointer + 1)) || (char)*(d_pointer + 1) == '_')
+			tmp1 = my_strjoin(tmp1, after_var(d_pointer + 1));
+		else
+		{
+			*d_pointer *= -1; // ТАК НАДО
+			tmp1 = my_strjoin(tmp1, d_pointer);
+		}
+		if (!tmp1)
+		{
+			print_merror(all);
+			return (NULL);
+		}
+		free(str);
+		str = tmp1;
+	}
+	return (str);
 }
 
 int		make_cmd(t_all *all)
 {
 	char **cmds;
-	char **childs;
 	int i;
-	int j;
 	char *d_pointer;
 	char *tmp1;
 	char *tmp2;
-	char *tmp_3;
 	char *end;
 
 	i = 0;
@@ -768,138 +877,138 @@ int		make_cmd(t_all *all)
 		while ((d_pointer = ft_strchr(cmds[i], '$')))
 		{
 			end = end_var(d_pointer + 1);
-			if ((tmp2 = get_env_val(all->env, end)))
-			{
-				tmp1 = ft_substr(cmds[i], 0, d_pointer - cmds[i]);
-				tmp1 = my_strjoin(tmp1, tmp2);
-				tmp1 = my_strjoin(tmp1, after_var(d_pointer + 1));
-				if (!tmp1 || !end)
-					return (print_merror(all));
-				free(cmds[i]);
-				cmds[i] = tmp1;
-			}
-			else
-			{
-				tmp1 = ft_substr(cmds[i], 0, d_pointer - cmds[i]);
-				if (!tmp1)
-						return (print_merror(all));
-				if (ft_isalnum((int)*(d_pointer + 1)) || (char)*(d_pointer + 1) == '_')
-					tmp1 = my_strjoin(tmp1, after_var(d_pointer + 1));
-				else
-				{
-					*d_pointer *= -1; // ТАК НАДО
-					tmp1 = my_strjoin(tmp1, d_pointer);
-					if (!tmp1)
-						return (print_merror(all));
-				}
-				cmds[i] = tmp1;
-			}
+			if (!end)
+				return(print_merror(all));
+			cmds[i] = var_replace(all, cmds[i], d_pointer, end);
+			cmds[i] = if_no_var(all, cmds[i], d_pointer, end);
 			free(end);
 		}
-		//удалить лишнее
-		//проверить случай echo |    ;
-		//$PATH$PATH -некоректно обрабатывает
-		unshield(cmds[i]);
 		make_struct(all, cmds[i]);
-		//printf("%s\n", cmds[i]);
+		free(cmds[i]);
 		i++;
 	}
-	// free(cmds[0]);
-	//free(cmds);              // для теста
-	//printf("\n");
+	free(cmds);
 	return (0);
+}
+
+void	free_all(t_all *all)
+{
+	if (all->cmds)
+		free_cmd(all);
+	if (all->src->str)
+		free(all->src->str);
 }
 
 int		parser(t_all *all)
 {
 	t_line src;
+	int		ret;
 	
 	ft_bzero(&all->val, sizeof(all->val));
 	src.str = ft_strdup(all->history[all->hist_len - 1]);
 	src.len = ft_strlen(src.str);
 	src.pos = 0;
-	int ret = shield(all, &src);
+	ret = shield(all, &src);
+	if (ret < 0)
+	{
+		free(src.str);
+		return (0);
+	}
 	ret = remove_ch(&src);
-	//надо удалить символы
+	if (ret < 0)
+	{
+		free(src.str);
+		print_merror(all);
+	}
 	all->src = &src;
 	make_cmd(all);
 	free(src.str);
-	// unshield(&src);
-	// printf("%s\n", src.str);
+	//free_all(all);
 	return (ret);
 }	
 
-int main(int ac, char **av, char **env)
-{
-	t_all *all;
-	char str[2000];
-
-	all = init_all(env);
-	new_line(all, str);
-	all->pos--;
-	all->hist_len--;
-	parser(all);
-}
-
-// int		main(int ac, char **av, char **env)
+// int main(int ac, char **av, char **env)
 // {
 // 	t_all *all;
-// 	int len;
 // 	char str[2000];
 
 // 	all = init_all(env);
-// 	while(str[0] != '\04') 
-// 	{
-// 		new_line(all, str);
-// 		nocanon(all);
-// 		while (ft_strncmp(str, "\n", 2) && str[0] != '\04')
-// 		{
-// 			len = read(0, str, 1000);
-// 			str[len] = 0;
-// 			if (!ft_strncmp(str, "\e[A", 5))
-// 			{
-// 				if (all->hist_len > 1)
-// 				{
-// 					tputs(restore_cursor, 1, ft_putint);
-// 					print_previus(all);
-// 					tputs(tigetstr("ed"), 1, ft_putint);
-// 				}
-// 			}
-// 			else if (!ft_strncmp(str, "\e[B", 5))
-// 			{
-// 				tputs(restore_cursor, 1, ft_putint);
-// 				print_next(all);
-// 				tputs(tigetstr("ed"), 1, ft_putint);
-// 			}
-// 			else if (!ft_strncmp(str, "\177", 5))
-// 			{
-// 				if (ft_strlen(all->history[all->pos]) > 0)
-// 				{
-// 					tputs(cursor_left, 1, ft_putint);
-// 					all->history[all->pos][ft_strlen(all->history[all->pos]) - 1] = '\0';
-// 					tputs(tgetstr("dc", 0), 1, ft_putint);
-// 				}
-// 			}
-// 			else if (!ft_strncmp(str, "\e[D", 5))
-// 			{
-// 				if (ft_strlen(all->history[all->pos]) > 0)
-// 					tputs(cursor_left, 1, ft_putint);
-// 			}
-// 			else if (!ft_strncmp(str, "\e[C", 5))
-// 				tputs(cursor_right, 1, ft_putint);
-// 			else
-// 			{
-// 				if (hist_strjoin(all, str) < 0)
-// 					return (-1);
-// 				write(1, str, len);
-// 			}
-// 		}
-// 		parser(all);
-// 		save_history(all);
-// 	}
-// 	all->term.c_lflag |= ECHO;
-// 	all->term.c_lflag |= ICANON;
-// 	tcsetattr(0, TCSANOW, &all->term);
-// 	write(1, "\n", 1);
-// 	return (0);
+// 	new_line(all, str);
+// 	all->pos--;
+// 	all->hist_len--;
+// 	parser(all);
 // }
+
+void up_arrow(t_all *all)
+{
+	if (all->hist_len > 1)
+	{
+		tputs(restore_cursor, 1, ft_putint);
+		print_previus(all);
+		tputs(tigetstr("ed"), 1, ft_putint);
+	}
+}
+
+void	down_arrow(t_all *all)
+{
+	tputs(restore_cursor, 1, ft_putint);
+	print_next(all);
+	tputs(tigetstr("ed"), 1, ft_putint);
+}
+
+void	backspace_key(t_all *all)
+{
+	if (ft_strlen(all->history[all->pos]) > 0)
+	{
+		tputs(cursor_left, 1, ft_putint);
+		all->history[all->pos][ft_strlen(all->history[all->pos]) - 1] = '\0';
+		tputs(tgetstr("dc", 0), 1, ft_putint);
+	}
+}
+
+void 	canon(t_all *all)
+{
+	all->term.c_lflag |= ECHO;
+	all->term.c_lflag |= ICANON;
+	tcsetattr(0, TCSANOW, &all->term);
+}
+
+int		main(int ac, char **av, char **env)
+{
+	t_all *all;
+	int len;
+	char str[2000];
+
+	all = init_all(env);
+	while(str[0] != '\04') 
+	{
+		new_line(all, str);
+		nocanon(all);
+		while (ft_strncmp(str, "\n", 2) && str[0] != '\04')
+		{
+			len = read(0, str, 1000);
+			str[len] = 0;
+			if (!ft_strncmp(str, "\e[A", 5))
+				up_arrow(all);
+			else if (!ft_strncmp(str, "\e[B", 5))
+				down_arrow(all);
+			else if (!ft_strncmp(str, "\177", 5))
+				backspace_key(all);
+			else if (!ft_strncmp(str, "\e[D", 5))
+				continue ;
+			else if (!ft_strncmp(str, "\e[C", 5))
+				continue ;
+			else
+			{
+				if (hist_strjoin(all, str) < 0)
+					return (-1);
+				write(1, str, len);
+			}
+		}
+		parser(all);
+		save_history(all);
+		canon(all);
+	}
+	write(1, "\n", 1);
+	return (0);
+}

@@ -28,7 +28,6 @@ typedef struct s_command
 {
 	char **args;
 	int fd[2];
-	// struct s_command *child;
 } t_command;
 
 typedef struct s_env
