@@ -1,39 +1,38 @@
 #include "includes/minishell.h"
 #include <string.h>
 
+//t_list *parse_env(char **envp)
+//{
+//	t_list *lst;
+//	t_env *tmp;
+//	char *tmp_str;
+//
+//	lst = NULL;
+//
+//
+//	while (*envp)
+//	{
+//		tmp_str = *envp;
+//		while (*tmp_str)
+//		{
+//			if (*tmp_str == '=')
+//			{
+//				tmp = (t_env*)malloc(sizeof(t_env));
+//				if (!tmp)
+//					return (NULL);
+//				tmp->key = ft_substr(*envp, 0, tmp_str - *envp);
+//				tmp->value = ft_strdup(tmp_str + 1);
+//				ft_lstadd_back(&lst, ft_lstnew(tmp));
+//				break;
+//			}
+//			tmp_str++;
+//		}
+//		envp++;
+//	}
+//	return (lst);
+//}
 
-t_list *parse_env(char **env)
-{
-	t_list *lst;
-	t_env *tmp;
-	char *tmp_str;
-
-	lst = NULL;
-
-	
-	while (*env)
-	{
-		tmp_str = *env;
-		while (*tmp_str)
-		{
-			if (*tmp_str == '=')
-			{
-				tmp = (t_env*)malloc(sizeof(t_env));
-				if (!tmp)
-					return (NULL);
-				tmp->key = ft_substr(*env, 0, tmp_str - *env);
-				tmp->value = ft_strdup(tmp_str + 1);
-				ft_lstadd_back(&lst, ft_lstnew(tmp));
-				break;
-			}
-			tmp_str++;
-		}
-		env++;
-	}
-	return (lst);
-}
-
-t_all *init_all(char **env)
+t_all *init_all(char **envp)
 {
 	t_all *all;
 
@@ -43,7 +42,7 @@ t_all *init_all(char **env)
 	all->hist_list = NULL;
 	all->history = NULL;
 	all->hist_len = 0;
-	all->env = parse_env(env);
+	all->envp = parse_env(envp);
 	all->cmds = NULL;
 	all->src = NULL;
 	return (all);
@@ -55,16 +54,16 @@ int		ft_putint(int c)
 	return (c);
 }
 
-char 	*get_env_val(t_list *env, char *key)
+char 	*get_env_val(t_list *envp, char *key)
 {
 	t_env *tmp;
 
-	while (env)
+	while (envp)
 	{
-		tmp = env->content;
+		tmp = envp->content;
 		if (!ft_strncmp(tmp->key, key, ft_strlen(key) + 1 ))
 			return (tmp->value);
-		env = env->next;
+		envp = envp->next;
 	}
 	return (NULL);
 }
@@ -198,7 +197,7 @@ void	print_next(t_all *all)
 
 void	nocanon(t_all *all)
 {
-	all->term_name = get_env_val(all->env, "TERM");
+	all->term_name = get_env_val(all->envp, "TERM");
 	tcgetattr(0, &all->term);
 	all->term.c_lflag &= ~(ECHO);
 	all->term.c_lflag &= ~(ICANON);
@@ -715,13 +714,13 @@ int		m_struct(t_all *all, char ***argv) //ошибка
 {
 	int i;
 
-	all->cmds = (t_command*)malloc(sizeof(t_command) * all->cmds_num);
+	all->cmds = (t_cmd*)malloc(sizeof(t_cmd) * all->cmds_num);
 	if (!all->cmds)
 		return(print_merror(all));
 	i = 0;
 	while(i < all->cmds_num)
 	{
-		all->cmds[i].args = argv[i];
+		all->cmds[i].argv = argv[i];
 		i++;
 	}
 	return (0);
@@ -737,9 +736,9 @@ void	print_command(t_all *all)
 	while (i < all->cmds_num)
 	{
 		j = 0;
-		while (all->cmds[i].args[j])
+		while (all->cmds[i].argv[j])
 		{
-			s = all->cmds[i].args[j];
+			s = all->cmds[i].argv[j];
 			printf("%s\n", s);
 			j++;
 		}
@@ -758,12 +757,12 @@ void	free_cmd(t_all *all)
 		while (i < all->cmds_num)
 		{
 			j = 0;
-			while(all->cmds[i].args[j])
+			while(all->cmds[i].argv[j])
 			{
-				free(all->cmds[i].args[j]);
+				free(all->cmds[i].argv[j]);
 				j++;
 			}
-			free(all->cmds[i].args);
+			free(all->cmds[i].argv);
 			i++;
 		}
 		free(all->cmds);
@@ -801,10 +800,14 @@ int		make_struct(t_all *all, char *str)
 	i = 0;
 	if (m_struct(all, cmds) < 0)
 		return (print_merror(all)); //ЪУЪ!
-	print_command(all);
-	free(argv);
-	free (cmds);
-	free_cmd(all);
+
+
+
+	///
+	execute_cmd(all);
+	// free(argv);
+	// free (cmds);
+	// free_cmd(all);
 	return (0);
 }
 
@@ -813,7 +816,7 @@ char	*var_replace(t_all *all, char *str, char *d_pointer, char *end)
 	char *tmp1;
 	char *tmp2;
 
-	if ((tmp2 = get_env_val(all->env, end)))
+	if ((tmp2 = get_env_val(all->envp, end)))
 	{
 		tmp1 = ft_substr(str, 0, d_pointer - str);
 		tmp1 = my_strjoin(tmp1, tmp2);
@@ -834,7 +837,7 @@ char	*if_no_var(t_all *all, char *str, char *d_pointer, char *end)
 	char *tmp1;
 	char *tmp2;
 
-	if (!(tmp2 = get_env_val(all->env, end)))
+	if (!(tmp2 = get_env_val(all->envp, end)))
 	{
 		tmp1 = ft_substr(str, 0, d_pointer - str);
 		if (!tmp1)
@@ -927,12 +930,12 @@ int		parser(t_all *all)
 	return (ret);
 }	
 
-// int main(int ac, char **av, char **env)
+// int main(int ac, char **av, char **envp)
 // {
 // 	t_all *all;
 // 	char str[2000];
 
-// 	all = init_all(env);
+// 	all = init_all(envp);
 // 	new_line(all, str);
 // 	all->pos--;
 // 	all->hist_len--;
@@ -973,13 +976,13 @@ void 	canon(t_all *all)
 	tcsetattr(0, TCSANOW, &all->term);
 }
 
-int		main(int ac, char **av, char **env)
+int		main(int ac, char **av, char **envp)
 {
 	t_all *all;
 	int len;
 	char str[2000];
 
-	all = init_all(env);
+	all = init_all(envp);
 	while(str[0] != '\04') 
 	{
 		new_line(all, str);
@@ -1005,9 +1008,9 @@ int		main(int ac, char **av, char **env)
 				write(1, str, len);
 			}
 		}
+		canon(all);
 		parser(all);
 		save_history(all);
-		canon(all);
 	}
 	write(1, "\n", 1);
 	return (0);
