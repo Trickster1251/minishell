@@ -31,8 +31,10 @@ char    *search_key(t_list *lst, char *key)
         if (ft_strncmp(key, env->key, ft_strlen(key)) == 0)
         {
             result = ft_strdup(env->value);
-            free(env->value);
-            free(env->key);
+            // write(1,result,ft_strlen(result));
+            // write(1,"\n", 1);
+            // free(env->value);
+            // free(env->key);
             return(result);
         }
         tmp = tmp->next;

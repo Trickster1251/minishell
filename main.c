@@ -1,37 +1,6 @@
 #include "includes/minishell.h"
 #include <string.h>
 
-//t_list *parse_env(char **envp)
-//{
-//	t_list *lst;
-//	t_env *tmp;
-//	char *tmp_str;
-//
-//	lst = NULL;
-//
-//
-//	while (*envp)
-//	{
-//		tmp_str = *envp;
-//		while (*tmp_str)
-//		{
-//			if (*tmp_str == '=')
-//			{
-//				tmp = (t_env*)malloc(sizeof(t_env));
-//				if (!tmp)
-//					return (NULL);
-//				tmp->key = ft_substr(*envp, 0, tmp_str - *envp);
-//				tmp->value = ft_strdup(tmp_str + 1);
-//				ft_lstadd_back(&lst, ft_lstnew(tmp));
-//				break;
-//			}
-//			tmp_str++;
-//		}
-//		envp++;
-//	}
-//	return (lst);
-//}
-
 t_all *init_all(char **envp)
 {
 	t_all *all;
@@ -930,18 +899,6 @@ int		parser(t_all *all)
 	return (ret);
 }	
 
-// int main(int ac, char **av, char **envp)
-// {
-// 	t_all *all;
-// 	char str[2000];
-
-// 	all = init_all(envp);
-// 	new_line(all, str);
-// 	all->pos--;
-// 	all->hist_len--;
-// 	parser(all);
-// }
-
 void up_arrow(t_all *all)
 {
 	if (all->hist_len > 1)
@@ -1015,3 +972,17 @@ int		main(int ac, char **av, char **envp)
 	write(1, "\n", 1);
 	return (0);
 }
+
+
+// int main(int ac, char **av, char **envp)
+// {
+// 	t_all *all;
+// 	char str[2000];
+
+// 	all = init_all(envp);
+// 	new_line(all, str);
+// 	all->pos--;
+// 	all->hist_len--;
+// 	parser(all);
+// }
+//

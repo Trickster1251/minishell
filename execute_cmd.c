@@ -2,14 +2,6 @@
 
 // Лики в unset
 // Сделать сортировку в export, и возможность канкатенировать переменные
-// Сделать обратный редирект, если встречен обратный редирект, то dup2, заменяет 0 на fd[0]
-// Начать делать пайпы
-// Если есть пайпы, то я считаюх их количество, и спличу по-ним
-// Инициализация массивов пайпов, кол-во элементов определяется количеством элементов
-
-
-// "cat < a | grep "hello" | wc"
-// Мне попадает строка, она сплиться по пайпам, потом по пробелам, получается это
 
 int     count_pipes(char *s, t_cmd *cmd)
 {
@@ -71,6 +63,52 @@ int     dup_func(int **pfd, int i, int cmd_com, t_cmd *cmd)
     return (0);
 }
 
+char *in_path(char **path, t_cmd *cmd)
+{
+    struct stat buf;
+    int     i = -1;
+    char    *comd = ft_strjoin("/", cmd->argv[0]);
+    while(path[++i] && cmd->fd[0] != -1 && cmd->fd[1] != -1)
+    {
+        if (lstat(ft_strjoin(path[i], comd), &buf) == 0)
+            return (path[i]);
+    }
+    return (0);
+}
+
+// void    exec_command(t_all *all, t_cmd *cmd, int j, t_list *envp)
+// {
+//     char    **env = lst_to_array(envp);
+//     char    **path = ft_split(search_key(envp, "PATH"), ':');
+//     char    *comd = ft_strjoin("/", cmd->argv[0]);
+//     int     i;
+
+//     i = -1;
+//     struct stat buf;
+
+//     // printf("Вошел!\n");
+//     if (lstat(cmd->argv[0], &buf) == 0)
+//     {
+//         execve(cmd->argv[0], cmd->argv, env);
+//     }
+
+//     char *path1 = in_path(path, cmd);
+//     if (path)
+//     {
+//         printf("minishell: %s: command not found\n", cmd->argv[0]);
+//         gl_fd[0] = 127;
+//         exit (127);
+//     }
+
+//     else if (lstat(ft_strjoin(path[i], comd), &buf) == 0)
+//     {
+//         char *tmp = ft_strjoin(path1, comd);
+//         printf("PATH: |%s|\nCMD ARG: |%s| |%s|\n", tmp, cmd->argv[0], cmd->argv[1]);
+//         execve(tmp, cmd->argv, env);
+//     }
+// }
+
+
 void    exec_command(t_all *all, t_cmd *cmd, int j, t_list *envp)
 {
     char    **env = lst_to_array(envp);
@@ -81,25 +119,24 @@ void    exec_command(t_all *all, t_cmd *cmd, int j, t_list *envp)
     i = -1;
     struct stat buf;
 
-    printf("Вошел!\n");
     if (lstat(cmd->argv[0], &buf) == 0)
     {
         execve(cmd->argv[0], cmd->argv, env);
     }
-    // while(path[++i])
+
     while(path[++i] && cmd->fd[0] != -1 && cmd->fd[1] != -1)
     {
-        write(1, "EXEC FINISH\n", 12);
+        // write(1, "EXEC FINISH\n", 12);
         if (lstat(ft_strjoin(path[i], comd), &buf) == 0)
         {
             char *tmp = ft_strjoin(path[i], comd);
             printf("PATH: |%s|\nCMD ARG: |%s| |%s|\n", tmp, cmd->argv[0], cmd->argv[1]);
-            write(1, "EXEC FINISH!!!\n", 12);
             execve(tmp, cmd->argv, env);
         }
     }
     printf("minishell: %s: command not found\n", cmd->argv[0]);
     gl_fd[0] = 127;
+    exit (127);
 }
 
 int     count_redir(char **arr)
@@ -222,7 +259,7 @@ void    ctrl_c(int sig)
 int    **pipes_fd(t_all *a)
 {
     int **pfd;
-    pfd = malloc(sizeof(int *) * (a->cmds_num - 1));
+    pfd = calloc(sizeof(int *), (a->cmds_num - 1));
     for (int j = 0; j < a->cmds_num - 1; j++)
     {
         pfd[j] = malloc(sizeof(int) * 2);
@@ -249,14 +286,13 @@ void     execute_cmd(t_all *a)
     {
         a->cmds[i].fd[0] = 0;
         a->cmds[i].fd[1] = 1;
+        gl_fd[0] = 0;
         a->cmds[i].count_redir = 0;
         // print_arr(a->cmds[i].argv);
         a->cmds[i].count_redir = count_redir(a->cmds[i].argv);
         if (a->cmds[i].count_redir != 0)
             create_open_fd(&a->cmds[i], a->cmds[i].argv);
-
         // exec builtins commands
-
         // если переходить по / то сега, если просто cd, то ошибка малока
         if (strncmp(a->cmds[i].argv[0], "cd\0", 3) == 0)
         {
@@ -276,39 +312,36 @@ void     execute_cmd(t_all *a)
         else if (strncmp(a->cmds[i].argv[0], "export\0", 7) == 0)
         {
             ft_export(a->cmds, a->exp, a->envp);
-//            ft_env(a->cmds, a->envp);
-            a->cmds[i].argv[1] = NULL;
-            // ft_export(a->cmds, a->exp, a->envp);
-//            printf("------------>%s\n", search_key(a->envp, a->cmds[i].argv[1]));
         }
         else if (strncmp(a->cmds[i].argv[0], "unset\0", 6) == 0)
         {
             ft_unset(a->cmds, a->envp, a->exp);
-            // a->cmds[i].argv[1] = NULL;
-            // ft_export(a->cmds, a->exp, a->envp);
-            // ft_env(a->cmds, a->envp);
         }
         else if (strncmp(a->cmds[i].argv[0], "exit\0", 6) == 0)
             ft_exit(a->cmds);
-        else if (a->cmds[i].argv[0] != NULL)
+        else
         {
-            if ((pid = fork()) != 0)
+            pid = fork();
+            if (pid != 0)
             {
-                close(pfd[i][1]);
+                if (pfd != NULL && i < a->cmds_num  -1)
+                    close(pfd[i][1]);
             }
-            else
+            if (pid == 0)
             {
-                printf("CMD NUM: %d\n", a->cmds_num);
+
                 dup_func(pfd, i, a->cmds_num, a->cmds);
                 exec_command(a, &a->cmds[i], i, a->envp);
-                write(1, "EXEC FINISH1\n", 12);
-                // signal(2, ctrl_c);
-                // signal(3, ctrl_slash);
+          
+            // signal(2, ctrl_c);
+            // signal(3, ctrl_slash);
             }
+            wait(0);
+        // for (int j = 0; j < a->cmds_num; j++)
+        //     waitpid(pid, 0, -1);
         }
+
     }
-    for (int j = 0; j < a->cmds_num; j++)
-        waitpid(pid, 0, -1);
     // write(1, "EXEC FINISH\n", 12);
         //    while(1);
 //                sleep(1);

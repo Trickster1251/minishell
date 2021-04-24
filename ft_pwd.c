@@ -27,11 +27,13 @@ void    ft_cd(t_cmd *cmd, t_list *lst)
 {
     if (cmd->argv[1] == NULL)
     {
-        if ((cmd->argv[1] = search_key(lst , "HOME")) == NULL)
+        char *str= search_key(lst , "HOME\0");
+        if ((cmd->argv[1] = str) == NULL)
         {
             printf("minishell: HOME not set\n");
             gl_fd[0] = 1;
         }
+
     }
     if ((chdir(cmd->argv[1])) == -1)
     {
