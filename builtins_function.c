@@ -47,7 +47,7 @@ void    init_shlvl(t_list *envp, t_list *exp)
     char *value;
     value = search_key(exp, "SHLVL");
     printf("%s\n", value);
-//     set_value(envp, "SHLVL", ft_itoa((ft_atoi(value)) + 1));
+    set_value(envp, "SHLVL", ft_itoa((ft_atoi(value)) + 1));
 //     set_value(exp, "SHLVL", ft_itoa((ft_atoi(value)) + 1));
 //     set_value(envp, "OLDPWD", "");
 //     set_value(exp, "OLDPWD", "");
