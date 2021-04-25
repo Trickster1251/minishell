@@ -97,17 +97,20 @@ void    del_key(t_list **lst, char *key)
     {
         while(tmp)
         {
-            env = tmp->next->content;
-            if (!ft_strncmp(env->key, key, ft_strlen(key)))
-            {
-                printf("Gatcha!!!\n");
-                free((t_env *)(env)->key);
-                free((t_env *)(env)->value);
-                free(tmp->next->content);
-                free((tmp->next));
-                tmp->next = tmp->next->next;
-                return ;
-            }
+			if (tmp->next != NULL)
+			{
+				env = tmp->next->content;
+				if (!ft_strncmp(env->key, key, ft_strlen(key)))
+				{
+					printf("Gatcha!!!\n");
+					free((t_env *)(env)->key);
+					free((t_env *)(env)->value);
+					free(tmp->next->content);
+					free((tmp->next));
+					tmp->next = tmp->next->next;
+					return ;
+				}
+			}
             tmp = tmp->next;
         }
     }
@@ -193,15 +196,18 @@ void    ft_export(t_cmd *cmd, t_list *envp, t_list *exp)
             //
             write(1,key,ft_strlen(key));
             //
-            value = ft_substr(cmd->argv[i], ++first_space, ft_strlen(cmd->argv[i]));
+			if (first_space != 0)
+            	value = ft_substr(cmd->argv[i], ++first_space, ft_strlen(cmd->argv[i]));
+			else
+				value = ft_strdup("");
             //
             write(1, value,ft_strlen(value));
             //
             add_key(envp, key, value);
             add_key(exp, key, value);
         }
-        free(key);
-        free(value);
+        // free(key);
+        // free(value);
     }
     // print_env(envp);
 }

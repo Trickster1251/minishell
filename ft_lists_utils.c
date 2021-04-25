@@ -45,17 +45,20 @@ char    *search_key(t_list *lst, char *key)
 void    add_key(t_list *lst, char *key, char *value)
 {
     t_env *env;
+	char *tmp;
 
     env = ft_calloc(sizeof(t_env *), 2);
     env->key = key;
     env->value = value;
-    if (search_key(lst, key) == NULL)
+	tmp = search_key(lst, key);
+    if (tmp == NULL)
         ft_lstadd_back(&lst, ft_lstnew(env));
     else
         set_value(lst, key, value);
+	free(tmp);
 //    free(env->value);
 //    free(env->key);
-    free(env);
+    //free(env);
 }
 
 t_list  *sorting(t_list *lst)
@@ -93,7 +96,8 @@ void    print_env(t_list *lst)
     while(tmp)
     {
         env = tmp->content;
-        printf("%s=%s\n", env->key, env->value);
+		if (ft_strlen(env->value) > 0)
+        	printf("%s=%s\n", env->key, env->value);
         tmp = tmp->next;
     }
 }
@@ -111,7 +115,10 @@ void    print_export(t_list **lst)
     while(tmp)
     {
         env = tmp->content;
-        printf("declare -x %s=\"%s\"\n", env->key, env->value);
+		if (ft_strlen(env->value) > 0)
+        	printf("declare -x %s=\"%s\"\n", env->key, env->value);
+		else
+			printf("declare -x %s\n", env->key);
         tmp = tmp->next;
     }
 }
