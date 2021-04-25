@@ -49,11 +49,12 @@ void    init_shlvl(t_list *envp, t_list *exp)
 {
     char *value;
     value = search_key(exp, "SHLVL");
-    set_value(envp, "SHLVL", ft_itoa((ft_atoi(value)) + 1));
-    set_value(exp, "SHLVL", ft_itoa((ft_atoi(value)) + 1));
-    set_value(envp, "OLDPWD", "");
-    set_value(exp, "OLDPWD", "");
-    free(value);
+    printf("%s\n", value);
+//     set_value(envp, "SHLVL", ft_itoa((ft_atoi(value)) + 1));
+//     set_value(exp, "SHLVL", ft_itoa((ft_atoi(value)) + 1));
+//     set_value(envp, "OLDPWD", "");
+//     set_value(exp, "OLDPWD", "");
+//     free(value);
 }
 
 
@@ -199,6 +200,7 @@ void    ft_export(t_cmd *cmd, t_list *envp, t_list *exp)
     int i;
     char *key;
     char *value;
+	char *tmp;
 
     len = len_arr(cmd->argv);
     i = 0;
@@ -210,12 +212,28 @@ void    ft_export(t_cmd *cmd, t_list *envp, t_list *exp)
         {
             int first_space = is_delim(cmd->argv[i]);
 			if (first_space != 0)
-            	key = ft_substr(cmd->argv[i], 0, first_space);
+			{
+				if (ft_strlen(cmd->argv[i]) > 1 && cmd->argv[i][first_space - 1] == '+')
+				{
+					key = ft_substr(cmd->argv[i], 0, first_space - 1);
+					tmp = ft_substr(cmd->argv[i], ++first_space, ft_strlen(cmd->argv[i]));
+					value = search_key(exp, key);
+					if (value == NULL)
+						value = ft_strdup("");
+					value = my_strjoin(value, tmp);
+					add_key(envp, key, value);
+            		add_key(exp, key, value);
+					continue;
+				}
+				else
+            		key = ft_substr(cmd->argv[i], 0, first_space);
+			}
 			else
 				key = ft_strdup(cmd->argv[i]);
             if (!is_valid_id(key))
 			{
 				printf("minishell: export `%s': not a valid identifier\n", key);
+				gl_fd[0] = 1;
 				free(key);
 			}
            // write(1,key,ft_strlen(key));

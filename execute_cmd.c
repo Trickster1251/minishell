@@ -34,10 +34,13 @@ void    print_arr(char **arr)
 
 int     dup_func(int **pfd, int i, int cmd_com, t_cmd *cmd)
 {
+
+    // && (ft_strncmp(cmd->argv[0], "cat\0", 4))
     if (pfd == 0)
         return (0);
     if (i == 0)
     {
+        printf("Gatcha!\n");
         close(pfd[i][0]);
         dup2(pfd[i][1], 1);
         close(pfd[i][1]);
@@ -51,7 +54,6 @@ int     dup_func(int **pfd, int i, int cmd_com, t_cmd *cmd)
     }
     else
     {
-        // printf("AAAAAAAAAAAAA\n");
         close(pfd[i - 1][1]);
         dup2(pfd[i - 1][0], 0);
         close(pfd[i - 1][1]);
@@ -75,39 +77,6 @@ char *in_path(char **path, t_cmd *cmd)
     }
     return (0);
 }
-
-// void    exec_command(t_all *all, t_cmd *cmd, int j, t_list *envp)
-// {
-//     char    **env = lst_to_array(envp);
-//     char    **path = ft_split(search_key(envp, "PATH"), ':');
-//     char    *comd = ft_strjoin("/", cmd->argv[0]);
-//     int     i;
-
-//     i = -1;
-//     struct stat buf;
-
-//     // printf("Вошел!\n");
-//     if (lstat(cmd->argv[0], &buf) == 0)
-//     {
-//         execve(cmd->argv[0], cmd->argv, env);
-//     }
-
-//     char *path1 = in_path(path, cmd);
-//     if (path)
-//     {
-//         printf("minishell: %s: command not found\n", cmd->argv[0]);
-//         gl_fd[0] = 127;
-//         exit (127);
-//     }
-
-//     else if (lstat(ft_strjoin(path[i], comd), &buf) == 0)
-//     {
-//         char *tmp = ft_strjoin(path1, comd);
-//         printf("PATH: |%s|\nCMD ARG: |%s| |%s|\n", tmp, cmd->argv[0], cmd->argv[1]);
-//         execve(tmp, cmd->argv, env);
-//     }
-// }
-
 
 void    exec_command(t_all *all, t_cmd *cmd, int j, t_list *envp)
 {
@@ -183,7 +152,7 @@ int is_redir_type(char *str)
     ft_strncmp(str, "<", 2) == 0);
 }
 
-void    create_open_fd(t_cmd *cmd, char **arr)
+void    create_open_fd(t_all *a, t_cmd *cmd, char **arr)
 {
     int     i;
     t_list  *lst = NULL;
@@ -194,7 +163,6 @@ void    create_open_fd(t_cmd *cmd, char **arr)
         ft_lstadd_back(&lst, ft_lstnew(arr[i]));
     }
     i++;
-
     while(arr[i])
     {
         if (!is_redir_type(arr[i]) && !is_redir_type(arr[i - 1]))
@@ -233,7 +201,6 @@ void    create_open_fd(t_cmd *cmd, char **arr)
             }
         }
         i++;
-        // printf("iteration %i\n", i - 1);
     }
     cmd->argv = lst_to_argv(lst);
 }
@@ -273,7 +240,7 @@ void     execute_cmd(t_all *a)
 
     a->exp = a->envp;
     //Тут 2 лика, не фришу старое значение
-//    init_shlvl(a->envp, a->exp);
+   init_shlvl(a->envp, a->exp);
     int     i;
     int     **pfd;
     pfd = 0;
@@ -288,21 +255,18 @@ void     execute_cmd(t_all *a)
         a->cmds[i].fd[1] = 1;
         gl_fd[0] = 0;
         a->cmds[i].count_redir = 0;
-        // print_arr(a->cmds[i].argv);
         a->cmds[i].count_redir = count_redir(a->cmds[i].argv);
         if (a->cmds[i].count_redir != 0)
-            create_open_fd(&a->cmds[i], a->cmds[i].argv);
+            create_open_fd(a, &a->cmds[i], a->cmds[i].argv);
         // exec builtins commands
         // если переходить по / то сега, если просто cd, то ошибка малока
         if (strncmp(a->cmds[i].argv[0], "cd\0", 3) == 0)
         {
             printf("Gatcha!!!\n");
             ft_cd(&a->cmds[i], a->envp);
-            // ft_env(a->cmds, a->envp);
         }
         else if (strncmp(a->cmds[i].argv[0], "echo\0", 5) == 0)
         {
-            // write(1, "asd\n", 4);
             ft_echo(a->cmds);
         }
         else if (strncmp(a->cmds[i].argv[0], "pwd\0", 4) == 0)
@@ -325,12 +289,20 @@ void     execute_cmd(t_all *a)
             if (pid != 0)
             {
                 if (pfd != NULL && i < a->cmds_num  -1)
+                {
+                    printf("CLOSE FD[1]\n");
                     close(pfd[i][1]);
+                }
             }
             if (pid == 0)
             {
-
-                dup_func(pfd, i, a->cmds_num, a->cmds);
+                if (a->cmds_num > 1)
+                    dup_func(pfd, i, a->cmds_num, a->cmds);
+                else
+                {
+                    dup2(a->cmds[i].fd[0], 0);
+                    dup2(a->cmds[i].fd[1], 1);
+                }
                 exec_command(a, &a->cmds[i], i, a->envp);
           
             // signal(2, ctrl_c);
@@ -343,6 +315,5 @@ void     execute_cmd(t_all *a)
 
     }
     // write(1, "EXEC FINISH\n", 12);
-        //    while(1);
 //                sleep(1);
 }

@@ -28,7 +28,7 @@ char    *search_key(t_list *lst, char *key)
     while(tmp)
     {
         env = tmp->content;
-        if (ft_strncmp(key, env->key, ft_strlen(key)) == 0)
+        if (ft_strncmp(key, env->key, ft_strlen(env->key)) == 0)
         {
 			if (env->value != NULL)
             	result = ft_strdup(env->value);

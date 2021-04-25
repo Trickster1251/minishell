@@ -986,4 +986,3 @@ int		main(int ac, char **av, char **envp)
 // 	all->pos--;
 // 	all->hist_len--;
 // 	parser(all);
-// }
