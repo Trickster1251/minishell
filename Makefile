@@ -19,8 +19,7 @@ all:	$(NAME)
 
 $(NAME): $(OBJS) $(INCLUDES)
 		@echo "------------>Please wait, minishell compile...<------------"
-		@#make re -C ./libft;
-		@#make bonus -C ./libft;
+		@make bonus -C ./libft;
 		@gcc -g -o minishell $(SRCS) $(MAIN_SRCS) $(LIBFT) -ltermcap
 
 clean:	

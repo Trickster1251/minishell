@@ -311,7 +311,7 @@ void     execute_cmd(t_all *a)
             ft_env(a->cmds, a->envp);
         else if (strncmp(a->cmds[i].argv[0], "export\0", 7) == 0)
         {
-            ft_export(a->cmds, a->exp, a->envp);
+            ft_export(a->cmds, a->envp, a->exp);
         }
         else if (strncmp(a->cmds[i].argv[0], "unset\0", 6) == 0)
         {

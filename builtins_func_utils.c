@@ -33,7 +33,7 @@ int     is_delim(char *line)
         if (line[i] == '=')
             return (i);
     }
-    return (i);
+    return (0);
 }
 
 char    **lst_to_array(t_list *lst)

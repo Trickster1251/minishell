@@ -30,7 +30,10 @@ char    *search_key(t_list *lst, char *key)
         env = tmp->content;
         if (ft_strncmp(key, env->key, ft_strlen(key)) == 0)
         {
-            result = ft_strdup(env->value);
+			if (env->value != NULL)
+            	result = ft_strdup(env->value);
+			else
+				return (ft_strdup(""));
             // write(1,result,ft_strlen(result));
             // write(1,"\n", 1);
             // free(env->value);
@@ -55,7 +58,8 @@ void    add_key(t_list *lst, char *key, char *value)
         ft_lstadd_back(&lst, ft_lstnew(env));
     else
         set_value(lst, key, value);
-	free(tmp);
+	if (tmp != NULL)
+		free(tmp);
 //    free(env->value);
 //    free(env->key);
     //free(env);
@@ -96,7 +100,7 @@ void    print_env(t_list *lst)
     while(tmp)
     {
         env = tmp->content;
-		if (ft_strlen(env->value) > 0)
+		if (env->value != NULL)
         	printf("%s=%s\n", env->key, env->value);
         tmp = tmp->next;
     }
@@ -115,10 +119,10 @@ void    print_export(t_list **lst)
     while(tmp)
     {
         env = tmp->content;
-		if (ft_strlen(env->value) > 0)
-        	printf("declare -x %s=\"%s\"\n", env->key, env->value);
-		else
+		if (env->value == NULL)
 			printf("declare -x %s\n", env->key);
+		else
+        	printf("declare -x %s=\"%s\"\n", env->key, env->value);
         tmp = tmp->next;
     }
 }
