@@ -933,6 +933,8 @@ void 	canon(t_all *all)
 	tcsetattr(0, TCSANOW, &all->term);
 }
 
+
+
 int		main(int ac, char **av, char **envp)
 {
 	t_all *all;

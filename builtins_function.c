@@ -20,7 +20,10 @@ t_list *parse_env(char **env)
 				if (!tmp)
 					return (NULL);
 				tmp->key = ft_substr(*env, 0, tmp_str - *env);
-				tmp->value = ft_strdup(tmp_str + 1);
+				if (tmp->key != NULL)
+					tmp->value = ft_strdup(tmp_str + 1);
+				else
+					tmp->value = NULL;
 				ft_lstadd_back(&lst, ft_lstnew(tmp));
 				break;
 			}
@@ -177,12 +180,27 @@ char	**ft_sort(char **env, int size)
 // export abc=123
 //export abc
 //  если в переменная abc уже есть, ее содержимое остается без изменнений
+int		is_valid_id(char *key)
+{
+	int i;
+
+	i = 0;
+	while (key[i])
+	{
+		if (!ft_isalpha(key[i]))
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
 void    ft_export(t_cmd *cmd, t_list *envp, t_list *exp)
 {
     int len;
     int i;
     char *key;
     char *value;
+	char *tmp;
 
     len = len_arr(cmd->argv);
     i = 0;
@@ -193,16 +211,39 @@ void    ft_export(t_cmd *cmd, t_list *envp, t_list *exp)
         while(++i < len && cmd->argv[i])
         {
             int first_space = is_delim(cmd->argv[i]);
-            key = ft_substr(cmd->argv[i], 0, first_space);
-            //
-            write(1,key,ft_strlen(key));
+			if (first_space != 0)
+			{
+				if (ft_strlen(cmd->argv[i]) > 1 && cmd->argv[i][first_space - 1] == '+')
+				{
+					key = ft_substr(cmd->argv[i], 0, first_space - 1);
+					tmp = ft_substr(cmd->argv[i], ++first_space, ft_strlen(cmd->argv[i]));
+					value = search_key(exp, key);
+					if (value == NULL)
+						value = ft_strdup("");
+					value = my_strjoin(value, tmp);
+					add_key(envp, key, value);
+            		add_key(exp, key, value);
+					continue;
+				}
+				else
+            		key = ft_substr(cmd->argv[i], 0, first_space);
+			}
+			else
+				key = ft_strdup(cmd->argv[i]);
+            if (!is_valid_id(key))
+			{
+				printf("minishell: export `%s': not a valid identifier\n", key);
+				gl_fd[0] = 1;
+				free(key);
+			}
+           // write(1,key,ft_strlen(key));
             //
 			if (first_space != 0)
             	value = ft_substr(cmd->argv[i], ++first_space, ft_strlen(cmd->argv[i]));
 			else
-				value = ft_strdup("");
+				value = NULL;
             //
-            write(1, value,ft_strlen(value));
+            //write(1, value,ft_strlen(value));
             //
             add_key(envp, key, value);
             add_key(exp, key, value);
