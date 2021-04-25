@@ -65,47 +65,43 @@ int     dup_func(int **pfd, int i, int cmd_com, t_cmd *cmd)
     return (0);
 }
 
-char *in_path(char **path, t_cmd *cmd)
+char     *search_path(t_all *all, t_cmd *cmd, t_list *envp)
 {
-    struct stat buf;
-    int     i = -1;
-    char    *comd = ft_strjoin("/", cmd->argv[0]);
-    while(path[++i] && cmd->fd[0] != -1 && cmd->fd[1] != -1)
-    {
-        if (lstat(ft_strjoin(path[i], comd), &buf) == 0)
-            return (path[i]);
-    }
-    return (0);
-}
-
-void    exec_command(t_all *all, t_cmd *cmd, int j, t_list *envp)
-{
-    char    **env = lst_to_array(envp);
-    char    **path = ft_split(search_key(envp, "PATH"), ':');
-    char    *comd = ft_strjoin("/", cmd->argv[0]);
     int     i;
 
     i = -1;
+    char    **env = lst_to_array(envp);
+    char    **path = ft_split(search_key(envp, "PATH"), ':');
+    char    *comd = ft_strjoin("/", cmd->argv[0]);
+
     struct stat buf;
 
+    gl_fd[0] = 0;
     if (lstat(cmd->argv[0], &buf) == 0)
-    {
-        execve(cmd->argv[0], cmd->argv, env);
-    }
-
+        return (cmd->argv[0]);
     while(path[++i] && cmd->fd[0] != -1 && cmd->fd[1] != -1)
     {
-        // write(1, "EXEC FINISH\n", 12);
         if (lstat(ft_strjoin(path[i], comd), &buf) == 0)
         {
             char *tmp = ft_strjoin(path[i], comd);
-            printf("PATH: |%s|\nCMD ARG: |%s| |%s|\n", tmp, cmd->argv[0], cmd->argv[1]);
-            execve(tmp, cmd->argv, env);
+            return (tmp);
         }
     }
     printf("minishell: %s: command not found\n", cmd->argv[0]);
     gl_fd[0] = 127;
-    exit (127);
+    return (NULL);
+}
+
+void    exec_command(t_all *all, t_cmd *cmd, t_list *envp, char *path)
+{
+    char    **env = lst_to_array(envp);
+    struct stat buf;
+    char    *comd = ft_strjoin("/", cmd->argv[0]);
+
+    if (lstat(cmd->argv[0], &buf) == 0)
+        execve(cmd->argv[0], cmd->argv, env);
+    if (lstat(path, &buf) == 0)
+        execve(path, cmd->argv, env);
 }
 
 int     count_redir(char **arr)
@@ -123,27 +119,6 @@ int     count_redir(char **arr)
             count++;
     }
     return (count);
-}
-
-int    ft_redir(t_cmd *cmd, char **arr,  int i, int count_redir)
-{
-    if (ft_strncmp(arr[i - 1], ">\0", 2) == 0)
-        {
-            count_redir++;
-            if (count_redir < cmd->count_redir)
-                open(arr[i], O_CREAT | O_TRUNC);
-            else
-                cmd->fd[1] = open(arr[i], O_TRUNC | O_RDWR | O_CREAT);
-        }
-    else if (ft_strncmp(arr[i - 1], ">>\0", 3) == 0)
-        {
-            count_redir++;
-            if (count_redir < cmd->count_redir)
-                open(arr[i], O_CREAT);
-            else
-                cmd->fd[1] = open(arr[i], O_APPEND | O_RDWR | O_CREAT);
-        }
-    return (count_redir);
 }
 
 int is_redir_type(char *str)
@@ -235,12 +210,13 @@ int    **pipes_fd(t_all *a)
     return (pfd);
 }
 
+
 void     execute_cmd(t_all *a)
 {
 
     a->exp = a->envp;
     //Тут 2 лика, не фришу старое значение
-   init_shlvl(a->envp, a->exp);
+//    init_shlvl(a->envp, a->exp);
     int     i;
     int     **pfd;
     pfd = 0;
@@ -253,7 +229,6 @@ void     execute_cmd(t_all *a)
     {
         a->cmds[i].fd[0] = 0;
         a->cmds[i].fd[1] = 1;
-        gl_fd[0] = 0;
         a->cmds[i].count_redir = 0;
         a->cmds[i].count_redir = count_redir(a->cmds[i].argv);
         if (a->cmds[i].count_redir != 0)
@@ -263,7 +238,7 @@ void     execute_cmd(t_all *a)
         if (strncmp(a->cmds[i].argv[0], "cd\0", 3) == 0)
         {
             printf("Gatcha!!!\n");
-            ft_cd(&a->cmds[i], a->envp);
+            ft_cd (&a->cmds[i], a->envp);
         }
         else if (strncmp(a->cmds[i].argv[0], "echo\0", 5) == 0)
         {
@@ -285,6 +260,7 @@ void     execute_cmd(t_all *a)
             ft_exit(a->cmds);
         else
         {
+            char *path = search_path(a, &a->cmds[i], a->envp);
             pid = fork();
             if (pid != 0)
             {
@@ -303,7 +279,9 @@ void     execute_cmd(t_all *a)
                     dup2(a->cmds[i].fd[0], 0);
                     dup2(a->cmds[i].fd[1], 1);
                 }
-                exec_command(a, &a->cmds[i], i, a->envp);
+                if (path == NULL)
+                    exit(127);
+                exec_command(a, &a->cmds[i], a->envp, path);
           
             // signal(2, ctrl_c);
             // signal(3, ctrl_slash);
@@ -312,7 +290,7 @@ void     execute_cmd(t_all *a)
         // for (int j = 0; j < a->cmds_num; j++)
         //     waitpid(pid, 0, -1);
         }
-
+        printf("code : %d\n", gl_fd[0]);
     }
     // write(1, "EXEC FINISH\n", 12);
 //                sleep(1);

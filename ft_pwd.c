@@ -25,19 +25,21 @@ void    ft_exit(t_cmd *cmd)
 //Готово
 void    ft_cd(t_cmd *cmd, t_list *lst)
 {
+
+    printf("arr = %s\n", cmd->argv[1]);
     if (cmd->argv[1] == NULL)
     {
         char *str= search_key(lst , "HOME\0");
-        if ((cmd->argv[1] = str) == NULL)
+        printf("arr = %s\n", cmd->argv[1]);
+        if (!str)
         {
             printf("minishell: HOME not set\n");
             gl_fd[0] = 1;
         }
-
     }
     if ((chdir(cmd->argv[1])) == -1)
     {
-        printf("minishell: %s: %s: %s\n", cmd->argv[0], cmd->argv[1], strerror(errno));
+        printf("minishell: cd: %s\n", strerror(errno));
         gl_fd[0] = 1;
     }
 }
