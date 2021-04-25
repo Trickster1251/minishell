@@ -944,7 +944,7 @@ int		main(int ac, char **av, char **envp)
 	{
 		new_line(all, str);
 		nocanon(all);
-		while (ft_strncmp(str, "\n", 2) && str[0] != '\04')
+		while (ft_strncmp(str, "\n", 2) && str[0] != '\4')
 		{
 			len = read(0, str, 1000);
 			str[len] = 0;
@@ -984,4 +984,8 @@ int		main(int ac, char **av, char **envp)
 // 	all->pos--;
 // 	all->hist_len--;
 // 	parser(all);
+<<<<<<< HEAD
 // }
+=======
+// }
+>>>>>>> a1f0c7bed4129c60a9b4fd59993477db374e21d4
