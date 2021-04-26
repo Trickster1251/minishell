@@ -187,7 +187,7 @@ int		is_valid_id(char *key)
 	i = 0;
 	while (key[i])
 	{
-		if (!ft_isalpha(key[i]))
+		if (!ft_isalpha(key[i]) && key[i] != '_')
 			return (0);
 		i++;
 	}
