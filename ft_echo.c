@@ -26,4 +26,5 @@ void    ft_echo(t_cmd *cmd)
     }
     if (echo_flag == 0)
         write(cmd->fd[1], "\n", 1);
+    gl_fd[0] = 0;
 }

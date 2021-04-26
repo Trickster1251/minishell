@@ -29,12 +29,14 @@ void    ft_cd(t_cmd *cmd, t_list *lst)
     printf("arr = %s\n", cmd->argv[1]);
     if (cmd->argv[1] == NULL)
     {
-        char *str= search_key(lst , "HOME\0");
+        char *str= search_key(lst , "HOME");
+        cmd->argv[1] = str;
         printf("arr = %s\n", cmd->argv[1]);
         if (!str)
         {
             printf("minishell: HOME not set\n");
             gl_fd[0] = 1;
+            return ;
         }
     }
     if ((chdir(cmd->argv[1])) == -1)
