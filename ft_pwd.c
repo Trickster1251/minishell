@@ -27,6 +27,7 @@ void    ft_cd(t_cmd *cmd, t_list *lst)
 {
 
     printf("arr = %s\n", cmd->argv[1]);
+    printf("arr = %s\n", cmd->argv[1]);
     if (cmd->argv[1] == NULL)
     {
         char *str= search_key(lst , "HOME");

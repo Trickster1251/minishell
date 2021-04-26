@@ -194,7 +194,7 @@ void    ctrl_c(int sig)
     if (sig == 2)
     {
         printf("^C\n");
-        exit (123);
+        gl_fd[0] = 123;
     }
 }
 
@@ -242,15 +242,70 @@ void     execute_cmd(t_all *a)
         }
         else if (strncmp(a->cmds[i].argv[0], "echo\0", 5) == 0)
         {
-            ft_echo(a->cmds);
+            pid = fork();
+            if (pid != 0)
+            {
+                if (pfd != NULL && i < a->cmds_num  -1)
+                    close(pfd[i][1]);
+            }
+            if (pid == 0)
+            {
+                if (a->cmds_num > 1)
+                    dup_func(pfd, i, a->cmds_num, a->cmds);
+                else
+                {
+                    dup2(a->cmds[i].fd[0], 0);
+                    dup2(a->cmds[i].fd[1], 1);
+                }
+                 ft_echo(a->cmds);
+                 exit (0);
+            }
         }
         else if (strncmp(a->cmds[i].argv[0], "pwd\0", 4) == 0)
             ft_pwd(a->cmds);
         else if (strncmp(a->cmds[i].argv[0], "env\0", 4) == 0)
-            ft_env(a->cmds, a->envp);
+        {
+
+            pid = fork();
+            if (pid != 0)
+            {
+                if (pfd != NULL && i < a->cmds_num  -1)
+                    close(pfd[i][1]);
+            }
+            if (pid == 0)
+            {
+                if (a->cmds_num > 1)
+                    dup_func(pfd, i, a->cmds_num, a->cmds);
+                else
+                {
+                    dup2(a->cmds[i].fd[0], 0);
+                    dup2(a->cmds[i].fd[1], 1);
+                }
+                ft_env(a->cmds, a->envp);
+                exit (0);
+            }
+
+        }
         else if (strncmp(a->cmds[i].argv[0], "export\0", 7) == 0)
         {
-            ft_export(a->cmds, a->envp, a->exp);
+            pid = fork();
+            if (pid != 0)
+            {
+                if (pfd != NULL && i < a->cmds_num  -1)
+                    close(pfd[i][1]);
+            }
+            if (pid == 0)
+            {
+                if (a->cmds_num > 1)
+                    dup_func(pfd, i, a->cmds_num, a->cmds);
+                else
+                {
+                    dup2(a->cmds[i].fd[0], 0);
+                    dup2(a->cmds[i].fd[1], 1);
+                }
+                ft_export(a->cmds, a->envp, a->exp);
+                exit (0);
+            }
         }
         else if (strncmp(a->cmds[i].argv[0], "unset\0", 6) == 0)
         {
@@ -283,14 +338,15 @@ void     execute_cmd(t_all *a)
                     exit(127);
                 exec_command(a, &a->cmds[i], a->envp, path);
           
+
             // signal(2, ctrl_c);
             // signal(3, ctrl_slash);
             }
-            wait(0);
-        // for (int j = 0; j < a->cmds_num; j++)
-        //     waitpid(pid, 0, -1);
+ 
         }
-        printf("code : %d\n", gl_fd[0]);
+        for (int j = 0; j < a->cmds_num; j++)
+            waitpid(pid, 0, -1);
+        // printf("code : %d\n", gl_fd[0]);
     }
     // write(1, "EXEC FINISH\n", 12);
 //                sleep(1);
