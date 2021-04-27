@@ -74,6 +74,7 @@ typedef struct s_all
 	struct termios term;
 	char *term_name;
 	int cmds_num;
+	char **env_arr;
 	// Нужно инициализировать массив пайпов
 	int   *fd[2];
 	t_line *src;
@@ -95,6 +96,7 @@ void    ft_env(t_cmd *cmd, t_list *envp);
 void    ft_export(t_cmd *cmd, t_list *envp, t_list *exp);
 void    ft_unset(t_cmd *cmd, t_list *envp, t_list *exp);
 void    ft_exit(t_cmd *cmd);
+void	ft_export_arg(t_cmd * cmd, t_list *envp, t_list *exp);
 
 //Инициализация
 void    init_shlvl(t_list *envp, t_list *exp);
