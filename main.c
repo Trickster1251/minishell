@@ -933,7 +933,67 @@ void 	canon(t_all *all)
 	tcsetattr(0, TCSANOW, &all->term);
 }
 
+void	new_env(t_all *all)
+{
+	t_list *tmp_list;
+	t_env *env;
+	char **new_env;
+	int i;
 
+	tmp_list = all->envp;
+	i = 0;
+	new_env = calloc(ft_lstsize(tmp_list) + 1, sizeof(char*));
+	while (tmp_list)
+	{
+		env = tmp_list->content;
+		new_env[i] = ft_strjoin(env->key, "=");
+		new_env[i] = my_strjoin(new_env[i], env->value);
+		tmp_list = tmp_list->next;
+		//free(all->env_strs[i]);
+		i++;
+	}
+	//free(all->env_strs);
+	all->env_strs = new_env;
+}
+
+void	shlvl_ini(t_all *all)
+{
+	char *shlvl;
+	char *logname;
+	int val;
+	t_list *tmp;
+	t_env *env;
+
+	// tmp = all->envp;
+	// while (tmp)
+	// {
+	// 	env = tmp->content;
+	// 	printf("%s\n", env->key);
+	// 	tmp = tmp->next;
+	// }
+	shlvl = get_env_val(all->envp, "SHLVL");
+	// if (shlvl != NULL);
+	// 	val = ft_atoi(shlvl);
+	// // else
+	// // 	printf("!!!!\n");
+	printf("%d\n", val);
+	if (val < 0)
+		add_key(all->envp, "SHLVL", "0");
+	else if (val >= 1000)
+	{
+		printf("minishell: warning: shell level (1001) too high, resetting to 1\n");
+		add_key(all->envp, "SHLVL", "1");
+	}
+	else
+	{	
+		val++;
+		add_key(all->envp, "SHLVL", ft_itoa(val));
+	}
+	add_key(all->envp, "OLD_PWD", "0");
+	logname = get_env_val(all->envp, "LOGNAME");
+	if (logname != NULL)
+		add_key(all->envp, "HOME", ft_strjoin("/Users/", logname));
+}
 
 int		main(int ac, char **av, char **envp)
 {
@@ -942,6 +1002,8 @@ int		main(int ac, char **av, char **envp)
 	char str[2000];
 
 	all = init_all(envp);
+	//shlvl_ini(all);
+	printf("!!!\n");
 	while(str[0] != '\04') 
 	{
 		new_line(all, str);
@@ -986,3 +1048,4 @@ int		main(int ac, char **av, char **envp)
 // 	all->pos--;
 // 	all->hist_len--;
 // 	parser(all);
+// }

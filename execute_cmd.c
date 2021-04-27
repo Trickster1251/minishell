@@ -98,6 +98,7 @@ void    exec_command(t_all *all, t_cmd *cmd, t_list *envp, char *path)
     struct stat buf;
     char    *comd = ft_strjoin("/", cmd->argv[0]);
 
+	
     if (lstat(cmd->argv[0], &buf) == 0)
         execve(cmd->argv[0], cmd->argv, env);
     if (lstat(path, &buf) == 0)
@@ -223,7 +224,9 @@ void     execute_cmd(t_all *a)
     if (a->cmds_num > 1)
         pfd = pipes_fd(a);
     i = -1;
-    pid_t pid;
+    pid_t pid[a->cmds_num];
+	int status[a->cmds_num];
+	int f;
 
     while(++i < a->cmds_num)
     {
@@ -242,13 +245,13 @@ void     execute_cmd(t_all *a)
         }
         else if (strncmp(a->cmds[i].argv[0], "echo\0", 5) == 0)
         {
-            pid = fork();
-            if (pid != 0)
+            pid[i] = fork();
+            if (pid[i] != 0)
             {
                 if (pfd != NULL && i < a->cmds_num  -1)
                     close(pfd[i][1]);
             }
-            if (pid == 0)
+            if (pid[i] == 0)
             {
                 if (a->cmds_num > 1)
                     dup_func(pfd, i, a->cmds_num, a->cmds);
@@ -266,13 +269,13 @@ void     execute_cmd(t_all *a)
         else if (strncmp(a->cmds[i].argv[0], "env\0", 4) == 0)
         {
 
-            pid = fork();
-            if (pid != 0)
+            pid[i] = fork();
+            if (pid[i] != 0)
             {
                 if (pfd != NULL && i < a->cmds_num  -1)
                     close(pfd[i][1]);
             }
-            if (pid == 0)
+            if (pid[i] == 0)
             {
                 if (a->cmds_num > 1)
                     dup_func(pfd, i, a->cmds_num, a->cmds);
@@ -288,25 +291,30 @@ void     execute_cmd(t_all *a)
         }
         else if (strncmp(a->cmds[i].argv[0], "export\0", 7) == 0)
         {
-            pid = fork();
-            if (pid != 0)
-            {
-                if (pfd != NULL && i < a->cmds_num  -1)
-                    close(pfd[i][1]);
-            }
-            if (pid == 0)
-            {
-                if (a->cmds_num > 1)
-                    dup_func(pfd, i, a->cmds_num, a->cmds);
-                else
-                {
-                    dup2(a->cmds[i].fd[0], 0);
-                    dup2(a->cmds[i].fd[1], 1);
-                }
-                ft_export(a->cmds, a->envp, a->exp);
-                exit (0);
-            }
-        }
+			if (a->cmds[i].argv[1] == NULL)
+			{
+				pid[i] = fork();
+				if (pid[i] != 0)
+				{
+					if (pfd != NULL && i < a->cmds_num - 1)
+						close(pfd[i][1]);
+				}
+				if (pid[i] == 0)
+				{
+					if (a->cmds_num > 1)
+						dup_func(pfd, i, a->cmds_num, a->cmds);
+					else
+					{
+						dup2(a->cmds[i].fd[0], 0);
+						dup2(a->cmds[i].fd[1], 1);
+					}
+					ft_export(a->cmds, a->envp, a->exp);
+					exit(0);
+				}
+			}
+			else
+				ft_export_arg(a->cmds, a->envp, a->exp);
+		}
         else if (strncmp(a->cmds[i].argv[0], "unset\0", 6) == 0)
         {
             ft_unset(a->cmds, a->envp, a->exp);
@@ -316,8 +324,8 @@ void     execute_cmd(t_all *a)
         else
         {
             char *path = search_path(a, &a->cmds[i], a->envp);
-            pid = fork();
-            if (pid != 0)
+            pid[i] = fork();
+            if (pid[i] != 0)
             {
                 if (pfd != NULL && i < a->cmds_num  -1)
                 {
@@ -325,7 +333,7 @@ void     execute_cmd(t_all *a)
                     close(pfd[i][1]);
                 }
             }
-            if (pid == 0)
+            if (pid[i] == 0)
             {
                 if (a->cmds_num > 1)
                     dup_func(pfd, i, a->cmds_num, a->cmds);
@@ -341,10 +349,20 @@ void     execute_cmd(t_all *a)
             // signal(2, ctrl_c);
             // signal(3, ctrl_slash);
             }
+			// waitpid(pid[i], &status[i], 0);
+			// f = WSTOPSIG(status[i]);
+			// if (f != 0)
+			// 	gl_fd[0] = f;
         }
-    }
-    for (int j = 0; j < a->cmds_num; j++)
-        waitpid(pid, 0, -1);
+        for (int j = 0; j < a->cmds_num; j++)
+		{
+			waitpid(pid[j], &status[j], 0);
+			f = WSTOPSIG(status[j]);
+			if (f != 0)
+				gl_fd[0] = f;
+		}
+
+        // printf("code : %d\n", gl_fd[0]);
     // write(1, "EXEC FINISH\n", 12);
 //                sleep(1);
 }
