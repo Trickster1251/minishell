@@ -975,10 +975,10 @@ void	shlvl_ini(t_all *all)
 	// 	tmp = tmp->next;
 	// }
 	shlvl = get_env_val(all->envp, "SHLVL");
-	// if (shlvl != NULL);
-	// 	val = ft_atoi(shlvl);
-	// // else
-	// // 	printf("!!!!\n");
+	if (shlvl != NULL)
+		val = ft_atoi(shlvl);
+	else
+		return ;
 	printf("%d\n", val);
 	if (val < 0)
 		add_key(all->envp, "SHLVL", "0");
@@ -1004,9 +1004,8 @@ int		main(int ac, char **av, char **envp)
 	int len;
 	char str[2000];
 
-	printf("%s\n", envp[0]);
 	all = init_all(envp);
-	//shlvl_ini(all);
+	shlvl_ini(all);
 	//printf("!!!");
 	while(str[0] != '\04') 
 	{

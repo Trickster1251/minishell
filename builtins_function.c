@@ -12,7 +12,6 @@ t_list *parse_env(char **env)
 	while (*env)
 	{
 		tmp_str = *env;
-		printf("%s\n", tmp_str);
 		while (*tmp_str)
 		{
 			if (*tmp_str == '=')
