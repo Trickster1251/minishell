@@ -12,6 +12,7 @@ t_list *parse_env(char **env)
 	while (*env)
 	{
 		tmp_str = *env;
+		printf("%s\n", tmp_str);
 		while (*tmp_str)
 		{
 			if (*tmp_str == '=')
@@ -20,10 +21,10 @@ t_list *parse_env(char **env)
 				if (!tmp)
 					return (NULL);
 				tmp->key = ft_substr(*env, 0, tmp_str - *env);
-				if (tmp->key != NULL)
+				// if (tmp->key != NULL)
 					tmp->value = ft_strdup(tmp_str + 1);
-				else
-					tmp->value = NULL;
+				// else
+				// 	tmp->value = NULL;
 				ft_lstadd_back(&lst, ft_lstnew(tmp));
 				break;
 			}
@@ -261,50 +262,50 @@ void    ft_export(t_cmd *cmd, t_list *envp, t_list *exp)
     i = 0;
     if (cmd->argv[1] == NULL)
         print_export(&envp);
-//     else
-//     {
-//         while(++i < len && cmd->argv[i])
-//         {
-//             int first_space = is_delim(cmd->argv[i]);
-// 			if (first_space != 0)
-// 			{
-// 				if (ft_strlen(cmd->argv[i]) > 1 && cmd->argv[i][first_space - 1] == '+')
-// 				{
-// 					key = ft_substr(cmd->argv[i], 0, first_space - 1);
-// 					tmp = ft_substr(cmd->argv[i], ++first_space, ft_strlen(cmd->argv[i]));
-// 					value = search_key(exp, key);
-// 					if (value == NULL)
-// 						value = ft_strdup("");
-// 					value = my_strjoin(value, tmp);
-// 					add_key(envp, key, value);
-//             		add_key(exp, key, value);
-// 					continue;
-// 				}
-// 				else
-//             		key = ft_substr(cmd->argv[i], 0, first_space);
-// 			}
-// 			else
-// 				key = ft_strdup(cmd->argv[i]);
-//             if (!is_valid_id(key))
-// 			{
-// 				printf("minishell: export `%s': not a valid identifier\n", key);
-// 				gl_fd[0] = 1;
-// 				free(key);
-// 			}
-//            // write(1,key,ft_strlen(key));
-//             //
-// 			if (first_space != 0)
-//             	value = ft_substr(cmd->argv[i], ++first_space, ft_strlen(cmd->argv[i]));
-// 			else
-// 				value = NULL;
-//             //
-//             //write(1, value,ft_strlen(value));
-//             //
-//             add_key(envp, key, value);
-//             add_key(exp, key, value);
-//         }
-//         // free(key);
-//         // free(value);
-//     }
-//     // print_env(envp);
+    else
+    {
+        while(++i < len && cmd->argv[i])
+        {
+            int first_space = is_delim(cmd->argv[i]);
+			if (first_space != 0)
+			{
+				if (ft_strlen(cmd->argv[i]) > 1 && cmd->argv[i][first_space - 1] == '+')
+				{
+					key = ft_substr(cmd->argv[i], 0, first_space - 1);
+					tmp = ft_substr(cmd->argv[i], ++first_space, ft_strlen(cmd->argv[i]));
+					value = search_key(exp, key);
+					if (value == NULL)
+						value = ft_strdup("");
+					value = my_strjoin(value, tmp);
+					add_key(envp, key, value);
+            		add_key(exp, key, value);
+					continue;
+				}
+				else
+            		key = ft_substr(cmd->argv[i], 0, first_space);
+			}
+			else
+				key = ft_strdup(cmd->argv[i]);
+            if (!is_valid_id(key))
+			{
+				printf("minishell: export `%s': not a valid identifier\n", key);
+				gl_fd[0] = 1;
+				free(key);
+			}
+           // write(1,key,ft_strlen(key));
+            //
+			if (first_space != 0)
+            	value = ft_substr(cmd->argv[i], ++first_space, ft_strlen(cmd->argv[i]));
+			else
+				value = NULL;
+            //
+            //write(1, value,ft_strlen(value));
+            //
+            add_key(envp, key, value);
+            add_key(exp, key, value);
+        }
+        // free(key);
+        // free(value);
+    }
+    // print_env(envp);
 }
