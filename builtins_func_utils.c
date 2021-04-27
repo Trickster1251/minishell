@@ -44,7 +44,6 @@ char    **lst_to_array(t_list *lst)
     int len_str;
     char *key;
     int len = ft_lstsize(lst);
-    printf("%d\n", len);
     char **arr = ft_calloc(sizeof(char*), ft_lstsize(lst) + 1);
 
     while(tmp)
