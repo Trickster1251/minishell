@@ -260,7 +260,7 @@ void    ft_export(t_cmd *cmd, t_list *envp, t_list *exp)
     len = len_arr(cmd->argv);
     i = 0;
     if (cmd->argv[1] == NULL)
-        print_export(&envp);
+        print_export(&exp);
 //     else
 //     {
 //         while(++i < len && cmd->argv[i])

@@ -44,20 +44,21 @@ char    **lst_to_array(t_list *lst)
     int len_str;
     char *key;
     int len = ft_lstsize(lst);
+    printf("%d\n", len);
     char **arr = ft_calloc(sizeof(char*), ft_lstsize(lst) + 1);
 
     while(tmp)
     {
-        env = lst->content;
-        len_str = ft_strlen(env->key) + ft_strlen(env->value) + 1;
-        arr[i] = ft_calloc(sizeof(char), len_str);
-        bzero(arr[i], len_str);
+        env = tmp->content;
+        // len_str = ft_strlen(env->key) + ft_strlen(env->value) + 2;
+        arr[i] = ft_strdup("");
+        // arr[i] = ft_calloc(sizeof(char), len_str);
+        // bzero(arr[i], len_str);
         key = ft_strjoin(env->key, "=");
         arr[i] = ft_strjoin(key, env->value);
         tmp = tmp->next;
         i++;
     }
-    arr[i] = NULL;
     return(arr);
 }
 

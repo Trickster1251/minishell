@@ -77,8 +77,6 @@ char     *search_path(t_all *all, t_cmd *cmd, t_list *envp)
     struct stat buf;
 
     gl_fd[0] = 0;
-    if (lstat(cmd->argv[0], &buf) == 0)
-        return (cmd->argv[0]);
     while(path[++i] && cmd->fd[0] != -1 && cmd->fd[1] != -1)
     {
         if (lstat(ft_strjoin(path[i], comd), &buf) == 0)
@@ -87,6 +85,8 @@ char     *search_path(t_all *all, t_cmd *cmd, t_list *envp)
             return (tmp);
         }
     }
+    if (lstat(cmd->argv[0], &buf) == 0)
+        return (cmd->argv[0]);
     printf("minishell: %s: command not found\n", cmd->argv[0]);
     gl_fd[0] = 127;
     return (NULL);
@@ -94,15 +94,20 @@ char     *search_path(t_all *all, t_cmd *cmd, t_list *envp)
 
 void    exec_command(t_all *all, t_cmd *cmd, t_list *envp, char *path)
 {
-    char    **env = lst_to_array(envp);
+    char        **env = lst_to_array(envp);
+    char        *comd = ft_strjoin("/", cmd->argv[0]);
     struct stat buf;
-    char    *comd = ft_strjoin("/", cmd->argv[0]);
-
 	
     if (lstat(cmd->argv[0], &buf) == 0)
-        execve(cmd->argv[0], cmd->argv, env);
+    {
+        if ((execve(path, cmd->argv, env)) == -1)
+            printf("this error %s!!!\n", strerror(errno));
+    }
     if (lstat(path, &buf) == 0)
-        execve(path, cmd->argv, env);
+    {
+        if ((execve(path, cmd->argv, env)) == -1)
+            printf("this error %s!!!\n", strerror(errno));
+    }
 }
 
 int     count_redir(char **arr)
@@ -211,7 +216,6 @@ int    **pipes_fd(t_all *a)
     return (pfd);
 }
 
-
 void     execute_cmd(t_all *a)
 {
 
@@ -224,9 +228,12 @@ void     execute_cmd(t_all *a)
     if (a->cmds_num > 1)
         pfd = pipes_fd(a);
     i = -1;
-    pid_t pid[a->cmds_num];
-	int status[a->cmds_num];
-	int f;
+    pid_t   pid[a->cmds_num];
+	int     status[a->cmds_num];
+	int     f;
+
+    printf("COMMANDS_COUNT:=%d\n", a->cmds_num);
+    // printf("COMMANDS_COUNT:=%d", a->cmds_num);
 
     while(++i < a->cmds_num)
     {
@@ -260,15 +267,36 @@ void     execute_cmd(t_all *a)
                     dup2(a->cmds[i].fd[0], 0);
                     dup2(a->cmds[i].fd[1], 1);
                 }
-                 ft_echo(a->cmds);
-                 exit (0);
+                ft_echo(a->cmds);
+                exit (0);
             }
+            //Потом изменить способ возврата значения
+            gl_fd[0] = 0;
+
         }
         else if (strncmp(a->cmds[i].argv[0], "pwd\0", 4) == 0)
-            ft_pwd(a->cmds);
+        {
+            pid[i] = fork();
+            if (pid[i] != 0)
+            {
+                if (pfd != NULL && i < a->cmds_num  -1)
+                    close(pfd[i][1]);
+            }
+            if (pid[i] == 0)
+            {
+                if (a->cmds_num > 1)
+                    dup_func(pfd, i, a->cmds_num, a->cmds);
+                else
+                {
+                    dup2(a->cmds[i].fd[0], 0);
+                    dup2(a->cmds[i].fd[1], 1);
+                }
+                ft_pwd(a->cmds);
+                exit (gl_fd[0]);
+            }
+        }
         else if (strncmp(a->cmds[i].argv[0], "env\0", 4) == 0)
         {
-
             pid[i] = fork();
             if (pid[i] != 0)
             {
@@ -321,6 +349,7 @@ void     execute_cmd(t_all *a)
         }
         else if (strncmp(a->cmds[i].argv[0], "exit\0", 6) == 0)
             ft_exit(a->cmds);
+        //Выполнение бинарных команд
         else
         {
             char *path = search_path(a, &a->cmds[i], a->envp);
@@ -342,6 +371,11 @@ void     execute_cmd(t_all *a)
                     dup2(a->cmds[i].fd[0], 0);
                     dup2(a->cmds[i].fd[1], 1);
                 }
+                int res;
+                if ((res = kill(pid[i], 0)) == -1)
+                {
+                    printf("error = %s\n", strerror(errno));
+                }
                 if (path == NULL)
                     exit(127);
                 exec_command(a, &a->cmds[i], a->envp, path);
@@ -349,20 +383,18 @@ void     execute_cmd(t_all *a)
             // signal(2, ctrl_c);
             // signal(3, ctrl_slash);
             }
-			// waitpid(pid[i], &status[i], 0);
-			// f = WSTOPSIG(status[i]);
-			// if (f != 0)
-			// 	gl_fd[0] = f;
         }
         for (int j = 0; j < a->cmds_num; j++)
 		{
 			waitpid(pid[j], &status[j], 0);
 			f = WSTOPSIG(status[j]);
-			if (f != 0)
-				gl_fd[0] = f;
+			// if (f != 0)
+            // {
+			// 	gl_fd[0] = 1;
+            //     printf("f = %s\n", strerror(errno));
+            // }
 		}
-
-        // printf("code : %d\n", gl_fd[0]);
+        printf("code : %d\n", gl_fd[0]);
     // write(1, "EXEC FINISH\n", 12);
-//                sleep(1);
+    }
 }
