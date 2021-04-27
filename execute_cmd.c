@@ -337,17 +337,14 @@ void     execute_cmd(t_all *a)
                 if (path == NULL)
                     exit(127);
                 exec_command(a, &a->cmds[i], a->envp, path);
-          
 
             // signal(2, ctrl_c);
             // signal(3, ctrl_slash);
             }
- 
         }
-        for (int j = 0; j < a->cmds_num; j++)
-            waitpid(pid, 0, -1);
-        // printf("code : %d\n", gl_fd[0]);
     }
+    for (int j = 0; j < a->cmds_num; j++)
+        waitpid(pid, 0, -1);
     // write(1, "EXEC FINISH\n", 12);
 //                sleep(1);
 }
