@@ -20,10 +20,10 @@ t_list *parse_env(char **env)
 				if (!tmp)
 					return (NULL);
 				tmp->key = ft_substr(*env, 0, tmp_str - *env);
-				if (tmp->key != NULL)
+				// if (tmp->key != NULL)
 					tmp->value = ft_strdup(tmp_str + 1);
-				else
-					tmp->value = NULL;
+				// else
+				// 	tmp->value = NULL;
 				ft_lstadd_back(&lst, ft_lstnew(tmp));
 				break;
 			}
@@ -237,7 +237,11 @@ void    ft_export(t_cmd *cmd, t_list *envp, t_list *exp)
     len = len_arr(cmd->argv);
     i = 0;
     if (cmd->argv[1] == NULL)
+<<<<<<< HEAD
         print_export(&exp);
+=======
+        print_export(&envp);
+>>>>>>> 8d28d0dcd9454a089eca0ce2c4eeea1bdf5ad300
     else
     {
         while(++i < len && cmd->argv[i])

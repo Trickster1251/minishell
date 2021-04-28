@@ -26,13 +26,15 @@ int		ft_putint(int c)
 char 	*get_env_val(t_list *envp, char *key)
 {
 	t_env *tmp;
+	t_list *tmp_list;
 
-	while (envp)
+	tmp_list = envp;
+	while (tmp_list)
 	{
-		tmp = envp->content;
+		tmp = tmp_list->content;
 		if (!ft_strncmp(tmp->key, key, ft_strlen(key) + 1 ))
 			return (tmp->value);
-		envp = envp->next;
+		tmp_list = tmp_list->next;
 	}
 	return (NULL);
 }
@@ -172,6 +174,7 @@ void	nocanon(t_all *all)
 	all->term.c_lflag &= ~(ICANON);
 	all->term.c_lflag &= ~(ISIG);
 	tcsetattr(0, TCSANOW, &all->term);
+	//printf("%s\n", all->term_name);
 	tgetent(0, all->term_name);
 	tputs("minishell$ ", 1, ft_putint);
 	tputs(save_cursor, 1, ft_putint);
@@ -974,10 +977,10 @@ void	shlvl_ini(t_all *all)
 	// 	tmp = tmp->next;
 	// }
 	shlvl = get_env_val(all->envp, "SHLVL");
-	// if (shlvl != NULL);
-	// 	val = ft_atoi(shlvl);
-	// // else
-	// // 	printf("!!!!\n");
+	if (shlvl != NULL)
+		val = ft_atoi(shlvl);
+	else
+		return ;
 	printf("%d\n", val);
 	if (val < 0)
 		add_key(all->envp, "SHLVL", "0");
@@ -1004,8 +1007,8 @@ int		main(int ac, char **av, char **envp)
 	char str[2000];
 
 	all = init_all(envp);
-	//shlvl_ini(all);
-	printf("!!!\n");
+	shlvl_ini(all);
+	//printf("!!!");
 	while(str[0] != '\04') 
 	{
 		new_line(all, str);
@@ -1035,7 +1038,7 @@ int		main(int ac, char **av, char **envp)
 		parser(all);
 		save_history(all);
 	}
-	write(1, "\n", 1);
+	ft_putchar_fd('\n', 1);
 	return (0);
 }
 
@@ -1049,5 +1052,6 @@ int		main(int ac, char **av, char **envp)
 // 	new_line(all, str);
 // 	all->pos--;
 // 	all->hist_len--;
+// 	printf("!!!!!-\n");
 // 	parser(all);
 // }
