@@ -156,30 +156,7 @@ char	**ft_sort(char **env, int size)
 	}
 	return (env);
 }
-// ПЕРЕПИСАТЬ ФУНКЦИЮ! ВАЖНО!
-// export a1=123
-// export a2=333 
-// export a1+=$a2 // 123333
-// export a1+=a2 // 123a2
 
-// void    ft_export(t_cmd *cmd, int i, int j)
-// {
-//     int len;
-//     int i;
-
-//     len = len_arr(cmd->argv);
-//     i = 0;
-//     while(cmd->argv[i][j])
-//     {
-//         if (cmd->argv[i][j] == '+' && cmd->argv[i][j + 1] == '=')
-
-//     }
-// }
-
-//Возможные варианты, 
-// export abc=123
-//export abc
-//  если в переменная abc уже есть, ее содержимое остается без изменнений
 int		is_valid_id(char *key)
 {
 	int i;
@@ -260,7 +237,7 @@ void    ft_export(t_cmd *cmd, t_list *envp, t_list *exp)
     len = len_arr(cmd->argv);
     i = 0;
     if (cmd->argv[1] == NULL)
-        print_export(&envp);
+        print_export(&exp);
     else
     {
         while(++i < len && cmd->argv[i])
