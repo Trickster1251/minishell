@@ -1,6 +1,7 @@
 int g_sig = 0;
-int g_error = 0; $?
+int g_error = 0;
 int g_quit = 0;
+
 void    sigint_operate(int key)
 {
     (void)key;

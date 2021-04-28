@@ -65,20 +65,20 @@ void    add_key(t_list *lst, char *key, char *value)
     //free(env);
 }
 
-t_list  *sorting(t_list *lst)
-{
-    char    **arr;
-    t_list  *tmp = lst;
-    int     i;
-    char    *min;
+// t_list  *sorting(t_list *lst)
+// {
+//     char    **arr;
+//     t_list  *tmp = lst;
+//     int     i;
+//     char    *min;
 
-    arr = lst_to_array(lst);
-    i = -1;
-    while(arr[++i]);
-    arr = ft_sort(arr, i);
-    lst = parse_env(arr);
-    return (lst);
-}
+//     arr = lst_to_array(lst);
+//     i = -1;
+//     while(arr[++i]);
+//     arr = ft_sort(arr, i);
+//     lst = parse_env(arr);
+//     return (lst);
+// }
 
 void    print_lst(t_list *lst)
 {
@@ -106,15 +106,41 @@ void    print_env(t_list *lst)
     }
 }
 
-//Изменить отображение ключа без значения
-// export hello; в export появиться без равно, в env не отобразиться
-// Если export hello=, то в export появиться 'hello=""', в env "hello="
+
+int     who_more(char *str, char *str1)
+{
+    if (ft_strlen(str) >= ft_strlen(str1))
+        return (ft_strlen(str));
+    return (ft_strlen(str1));
+}
+
+// void    sorting(char **arr)
+// {
+//     char     *smallest = arr[0];
+//     int     i = 0;
+//     int     len = 0;
+//     char    *tmp;
+//     while(arr[++i])
+//     {
+//         len = who_more(smallest, arr[i]);
+//         if (ft_strncmp(smallest, arr[i], (size_t)len) > 0)
+//         {
+//             tmp = smallest;
+//             smallest = arr[i];
+//             arr[i] = tmp;
+//         }
+//     }
+//     return (arr);
+// }
+
 
 void    print_export(t_list **lst)
 {
     t_list *tmp = (*lst);
     t_env *env;
 
+    // char **envp = lst_to_array(&lst);
+    
 
     while(tmp)
     {

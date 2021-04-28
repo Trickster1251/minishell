@@ -32,6 +32,11 @@ void    print_arr(char **arr)
     }
 }
 
+//До того как команда была введена, работает ctrl + c, с определенным флагом,
+// и транкает символы в строке, перед отправкой флаг поднимается
+
+// Ctrl + D
+
 int     dup_func(int **pfd, int i, int cmd_com, t_cmd *cmd)
 {
 
@@ -186,23 +191,45 @@ void    create_open_fd(t_all *a, t_cmd *cmd, char **arr)
     cmd->argv = lst_to_argv(lst);
 }
 
+
+
+
+
+///////////////
+///////////////
+///////////////
+///////////////
+
 void    ctrl_slash(int sig)
 {
-    if (sig == 3)
+    // (void)sig;
+
+    if (gl_fd[0] == 0)
     {
-        printf("^\\Quit: 3\n");
-        exit (127);
+        write(1, "Quit: ", 6);
+        ft_putnbr_fd(sig, 1);
+        write(1, "\n", 1);
+        gl_fd[0] = 131;
     }
+    // if (gl_fd[1] == 0)
+    // {
+    //     // write(1, "baibak\n", 16);
+    //     write(1, "\b\b  \b\b", 5);
+    // }
 }
 
 void    ctrl_c(int sig)
 {
-    if (sig == 2)
+    if (gl_fd[1] == 0)
     {
-        printf("^C\n");
-        gl_fd[0] = 123;
+        write(1, "^C\n", 3);
+        gl_fd[0] = 130;
     }
 }
+///////////////
+///////////////
+///////////////
+///////////////
 
 int    **pipes_fd(t_all *a)
 {
@@ -315,7 +342,6 @@ void     execute_cmd(t_all *a)
                 ft_env(a->cmds, a->envp);
                 exit (0);
             }
-
         }
         else if (strncmp(a->cmds[i].argv[0], "export\0", 7) == 0)
         {
@@ -379,22 +405,23 @@ void     execute_cmd(t_all *a)
                 if (path == NULL)
                     exit(127);
                 exec_command(a, &a->cmds[i], a->envp, path);
-
-            // signal(2, ctrl_c);
-            // signal(3, ctrl_slash);
             }
+            signal(SIGINT, ctrl_c);
+            signal(SIGQUIT, ctrl_slash);
         }
         for (int j = 0; j < a->cmds_num; j++)
 		{
 			waitpid(pid[j], &status[j], 0);
-			f = WSTOPSIG(status[j]);
+			// f = WSTOPSIG(status[j]);
 			// if (f != 0)
             // {
 			// 	gl_fd[0] = 1;
             //     printf("f = %s\n", strerror(errno));
+            //     errno = 0;
             // }
 		}
         printf("code : %d\n", gl_fd[0]);
+        printf("code : %d\n", gl_fd[1]);
     // write(1, "EXEC FINISH\n", 12);
     }
 }

@@ -170,6 +170,7 @@ void	nocanon(t_all *all)
 	tcgetattr(0, &all->term);
 	all->term.c_lflag &= ~(ECHO);
 	all->term.c_lflag &= ~(ICANON);
+	all->term.c_lflag &= ~(ISIG);
 	tcsetattr(0, TCSANOW, &all->term);
 	tgetent(0, all->term_name);
 	tputs("minishell$ ", 1, ft_putint);
@@ -930,6 +931,7 @@ void 	canon(t_all *all)
 {
 	all->term.c_lflag |= ECHO;
 	all->term.c_lflag |= ICANON;
+	all->term.c_lflag |= ISIG;
 	tcsetattr(0, TCSANOW, &all->term);
 }
 

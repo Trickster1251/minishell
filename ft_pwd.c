@@ -23,28 +23,43 @@ void    ft_exit(t_cmd *cmd)
 }
 
 //Готово
+
+//cd 
+//old_pwd = pwd;
+//pwd = 
 void    ft_cd(t_cmd *cmd, t_list *lst)
 {
-
-    printf("arr = '%s'\n%d\n", cmd->argv[1], ft_strlen(cmd->argv[1]));
     gl_fd[0] = 0;
+    char *pwd;
     if (!cmd->argv[1])
     {
-        char *str= search_key(lst , "HOME");
-        cmd->argv[1] = str;
-        printf("arr = '%s'\n", cmd->argv[1]);
-        if (!str)
+        pwd= search_key(lst , "HOME");
+        if (pwd == NULL)
         {
             printf("minishell: HOME not set\n");
             gl_fd[0] = 1;
             return ;
         }
+        cmd->argv[1] = pwd;
     }
     printf("HELLLLLO\n");
+
+
+
+// Сделать норм историю
+    char dir[1000];
+    char *dir1 = getcwd(dir, 1000);
+    set_value(lst, "OLDPWD", dir1);
+
     if ((chdir(cmd->argv[1])) == -1)
     {
         printf("minishell: cd: %s\n", strerror(errno));
         gl_fd[0] = 1;
+    }
+    else
+    {
+        dir1 = getcwd(dir, 1000);
+        set_value(lst, "PWD", dir1);
     }
 }
 
