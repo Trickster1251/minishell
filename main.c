@@ -12,6 +12,8 @@ t_all *init_all(char **envp)
 	all->history = NULL;
 	all->hist_len = 0;
 	all->envp = parse_env(envp);
+	all->home = getenv("HOME");
+	all->file = ft_strjoin(all->home, "/.minishell_history");
 	all->cmds = NULL;
 	all->src = NULL;
 	return (all);
@@ -69,7 +71,7 @@ int		read_history(t_all *all)
 	int i;
 
 	line = NULL;
-	fd = open(".minishell_history", O_RDWR | O_CREAT, 0777);
+	fd = open(all->file, O_RDWR | O_CREAT, 0777);
 	ft_lstclear(&all->hist_list, free);
 	i = 0;
 	if (all->history)
@@ -98,7 +100,10 @@ int		read_history(t_all *all)
 	}
 	t_list *tmp = all->hist_list;
 	if (fd < 0 || bytes < 0)
+	{
+		// ft_lstadd_back(&all->hist_list, ft_lstnew(ft_strdup("")));
 		return (-1);
+	}
 	return (0);
 }
 
@@ -107,7 +112,7 @@ int		save_history(t_all *all)
 	int fd;
 	t_list *tmp;
 
-	fd = open(".minishell_history", O_RDWR | O_TRUNC | O_CREAT, 0777);
+	fd = open(all->file, O_RDWR | O_TRUNC | O_CREAT, 0777);
 	if (fd < 0)
 	{
 		close (fd);
@@ -184,15 +189,18 @@ int		new_line(t_all *all, char *str)
 {
 	t_list	*tmp;
 
-	if (read_history(all) < 0)
-		return (-1);
+	read_history(all);
 	tmp = ft_lstlast(all->hist_list);
-	if (all->hist_len == 0 || ft_strlen(tmp->content) != 0)
+	//printf("%p\n", tmp);
+	if ((all->hist_len == 0) || tmp == NULL)
+		ft_lstadd_back(&all->hist_list, ft_lstnew(ft_strdup("")));
+	else if (all->hist_len == 0 || ft_strlen(tmp->content) != 0)
 		ft_lstadd_back(&all->hist_list, ft_lstnew(ft_strdup("")));
 	if (get_hist_array(all) < 0)
 		return (-1);
 	all->pos = all->hist_len - 1;
 	ft_bzero(str, 2000);
+	
 	return (0);
 }
 
@@ -880,6 +888,8 @@ int		parser(t_all *all)
 	t_line src;
 	int		ret;
 	
+	if (all->history == NULL || all->hist_len <= 0)
+		return (0);
 	ft_bzero(&all->val, sizeof(all->val));
 	src.str = ft_strdup(all->history[all->hist_len - 1]);
 	src.len = ft_strlen(src.str);
@@ -986,7 +996,7 @@ void	shlvl_ini(t_all *all)
 		add_key(all->envp, "SHLVL", "0");
 	else if (val >= 1000)
 	{
-		printf("minishell: warning: shell level (1001) too high, resetting to 1\n");
+		printf("minishell: warning: shell level (%d) too high, resetting to 1\n", val + 1);
 		add_key(all->envp, "SHLVL", "1");
 	}
 	else
@@ -1009,11 +1019,11 @@ int		main(int ac, char **av, char **envp)
 	all = init_all(envp);
 	shlvl_ini(all);
 	//printf("!!!");
-	while(str[0] != '\04') 
+	while(1) 
 	{
 		new_line(all, str);
 		nocanon(all);
-		while (ft_strncmp(str, "\n", 2) && str[0] != '\4')
+		while (ft_strncmp(str, "\n", 2))
 		{
 			len = read(0, str, 1000);
 			str[len] = 0;
@@ -1027,6 +1037,21 @@ int		main(int ac, char **av, char **envp)
 				continue ;
 			else if (!ft_strncmp(str, "\e[C", 5))
 				continue ;
+			else if (!ft_strncmp(str, "\4", 2) && ft_strlen(all->history[all->pos]))
+				continue;
+			else if (!ft_strncmp(str, "\4", 2) && !ft_strlen(all->history[all->pos]))
+			{
+				canon(all);
+				save_history(all);
+				printf("exit\n");
+				exit(0);
+			}
+			else if (!ft_strncmp(str, "\03", 2))
+			{
+				canon(all);
+				write(1, "\n", 1);
+				break ;
+			}
 			else
 			{
 				if (hist_strjoin(all, str) < 0)
@@ -1034,9 +1059,12 @@ int		main(int ac, char **av, char **envp)
 				write(1, str, len);
 			}
 		}
-		canon(all);
-		parser(all);
-		save_history(all);
+		if (!ft_strncmp(str, "\n", 2))
+		{
+			canon(all);
+			parser(all);
+			save_history(all);
+		}
 	}
 	ft_putchar_fd('\n', 1);
 	return (0);
