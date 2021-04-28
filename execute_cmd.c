@@ -104,7 +104,7 @@ void     execute_cmd(t_all *a)
 	int     f;
     pid_t   pid[a->cmds_num];
 	int     status[a->cmds_num];
-
+//ЭЭЭЭЭЭЭЭЭ
     i = -1;
     pfd = 0;
     a->exp = a->envp;
