@@ -72,6 +72,8 @@ typedef struct s_all
 	int hist_len;
 	t_list *hist_list;
 	struct termios term;
+	char *home;
+	char *file;
 	char *term_name;
 	int cmds_num;
 	char **env_arr;
