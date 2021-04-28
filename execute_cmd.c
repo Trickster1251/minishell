@@ -15,6 +15,19 @@ void    print_arr(char **arr)
     }
 }
 
+void	free_str_arr(char **arr)
+{
+	int i;
+
+	i = 0;
+	while(arr[i])
+	{
+		free(arr[i]);
+		i++;
+	}
+	free(arr);
+}
+
 char     *search_path(t_all *all, t_cmd *cmd, t_list *envp)
 {
     int     i;
@@ -22,10 +35,16 @@ char     *search_path(t_all *all, t_cmd *cmd, t_list *envp)
     char    **env;
     char    **path;
     char    *comd;
+	char *tmp;
 
-    path = ft_split(search_key(envp, "PATH"), ':');
+	tmp = NULL;
+	tmp = search_key(envp, "PATH");
+    path = ft_split(tmp, ':');
+	if (tmp)
+		free(tmp);
+	if (!path)
+		path = ft_calloc(1, sizeof(char*));
     comd = ft_strjoin("/", cmd->argv[0]);
-    env = lst_to_array(envp);
     i = -1;
     gl_fd[0] = 0;
 
@@ -33,12 +52,19 @@ char     *search_path(t_all *all, t_cmd *cmd, t_list *envp)
 
     while(path[++i] && cmd->fd[0] != -1 && cmd->fd[1] != -1)
     {
-        if (lstat(ft_strjoin(path[i], comd), &buf) == 0)
+		tmp = ft_strjoin(path[i], comd);
+        if (lstat(tmp, &buf) == 0)
         {
-            char *tmp = ft_strjoin(path[i], comd);
+			free(tmp);
+            tmp = ft_strjoin(path[i], comd);
+			free_str_arr(path);
+			free(comd);
             return (tmp);
         }
+		free(tmp);
     }
+	free_str_arr(path);
+	free(comd);
     if (lstat(cmd->argv[0], &buf) == 0)
     {
         fd = open(cmd->argv[0], O_RDONLY);
@@ -64,6 +90,7 @@ void    exec_command(t_all *all, t_cmd *cmd, t_list *envp, char *path)
     struct stat buf;
 	int i;
 	
+	i = 0;
     if (lstat(path, &buf) == 0)
         execve(path, cmd->argv, env);
 }
@@ -115,6 +142,7 @@ void     execute_cmd(t_all *a)
 	int     f;
     pid_t   pid[a->cmds_num];
 	int     status[a->cmds_num];
+	char *path;
 
 	int j;
     i = -1;
@@ -182,51 +210,55 @@ void     execute_cmd(t_all *a)
 			    else
 				ft_export_arg(a->cmds, a->envp, a->exp);
                 exit (gl_fd[0]);
-            }
+			}
 		}
-        else if (strncmp(a->cmds[i].argv[0], "unset\0", 6) == 0)
-            ft_unset(a->cmds, a->envp, a->exp);
-        else if (strncmp(a->cmds[i].argv[0], "exit\0", 6) == 0)
-            ft_exit(a->cmds);
-        ///ВЫПОЛНЕНИЕ БИНАРНЫХ КОМАНД
-        else
-        {
-            char *path = search_path(a, &a->cmds[i], a->envp);
-            pid[i] = fork();
-            if (pid[i] != 0)
-            {
-                if (pfd != NULL && i < a->cmds_num  -1)
-                    close(pfd[i][1]);
-            }
-            if (pid[i] == 0)
-            {
-                if (a->cmds_num > 1)
-                    dup_fd(pfd, i, a->cmds_num, a->cmds);
-                else
-                {
-                    dup2(a->cmds[i].fd[0], 0);
-                    dup2(a->cmds[i].fd[1], 1);
-                }
-                if (path == NULL)
-                    exit(127);
-                
-                exec_command(a, &a->cmds[i], a->envp, path);
-            }
-            signal(SIGINT, ctrl_c);
-            signal(SIGQUIT, ctrl_slash);
-        }
-    }
-        j = -1;
-        while (++j < a->cmds_num)
+		else if (strncmp(a->cmds[i].argv[0], "unset\0", 6) == 0)
+			ft_unset(a->cmds, a->envp, a->exp);
+		else if (strncmp(a->cmds[i].argv[0], "exit\0", 6) == 0)
+			ft_exit(a->cmds);
+		///ВЫПОЛНЕНИЕ БИНАРНЫХ КОМАНД
+		else
 		{
-			waitpid(pid[j], &status[j], 0);
-			f = WSTOPSIG(status[j]);
-			if (gl_fd[0] == 0 && f != 0)
-            {
-				gl_fd[0] = errno;
-                printf("error:=%s\n", strerror(10));
-            }
+			path = search_path(a, &a->cmds[i], a->envp);
+			pid[i] = fork();
+			if (pid[i] != 0)
+			{
+				if (pfd != NULL && i < a->cmds_num - 1)
+					close(pfd[i][1]);
+			}
+			if (pid[i] == 0)
+			{
+				if (a->cmds_num > 1)
+					dup_fd(pfd, i, a->cmds_num, a->cmds);
+				else
+				{
+					dup2(a->cmds[i].fd[0], 0);
+					dup2(a->cmds[i].fd[1], 1);
+				}
+				if (path == NULL)
+					exit(127);
+				else
+				{
+					exec_command(a, &a->cmds[i], a->envp, path);
+				}
+			}
+			if (path)	
+				free(path); // ЕБАННОЕ ТЫ БЫДЛО, ПОЧИСТИСЬ БЛЯТБ
+			signal(SIGINT, ctrl_c);
+			signal(SIGQUIT, ctrl_slash);
 		}
-        printf("code : %d\n", gl_fd[0]);
-        // printf("code : %d\n", gl_fd[1]);
+	}
+	j = -1;
+	while (++j < a->cmds_num)
+	{
+		waitpid(pid[j], &status[j], 0);
+		f = WSTOPSIG(status[j]);
+		if (gl_fd[0] == 0 && f != 0)
+		{
+			gl_fd[0] = errno;
+			printf("error:=%s\n", strerror(10));
+		}
+	}
+	printf("code : %d\n", gl_fd[0]);
+	// printf("code : %d\n", gl_fd[1]);
 }

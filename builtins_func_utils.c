@@ -53,7 +53,7 @@ char    **lst_to_array(t_list *lst)
         // arr[i] = ft_calloc(sizeof(char), len_str);
         // bzero(arr[i], len_str);
         key = ft_strjoin(env->key, "=");
-        arr[i] = ft_strjoin(key, env->value);
+        arr[i] = my_strjoin(key, env->value);
         tmp = tmp->next;
         i++;
     }

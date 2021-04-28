@@ -136,4 +136,5 @@ void    add_key(t_list *lst, char *key, char *value);
 void	del_key(t_list **lst, char *key);
 char     *search_path(t_all *all, t_cmd *cmd, t_list *envp);
 int 	unshield(char *str);
+void	free_str_arr(char **arr);
 #endif
