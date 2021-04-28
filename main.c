@@ -562,7 +562,7 @@ char	**arg_join(t_all *all, char **argv, char *str)
 			print_merror(all);
 			return (NULL);
 		}
-		unshield(str);
+		//unshield(str);
 		tmp[len] = str;
 	}
 	return (tmp);

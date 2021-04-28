@@ -104,6 +104,7 @@ void     execute_cmd(t_all *a)
 	int     f;
     pid_t   pid[a->cmds_num];
 	int     status[a->cmds_num];
+	int j;
 //ЭЭЭЭЭЭЭЭЭ
     i = -1;
     pfd = 0;
@@ -118,6 +119,12 @@ void     execute_cmd(t_all *a)
         a->cmds[i].count_redir = count_redir(a->cmds[i].argv);
         if (a->cmds[i].count_redir != 0)
             create_open_fd(a, &a->cmds[i], a->cmds[i].argv);
+		j = 0;
+		while (a->cmds[i].argv[j])
+		{
+			unshield(a->cmds[i].argv[j]);
+			j++;
+		}
         ///
         ///
         ///
@@ -237,7 +244,7 @@ void     execute_cmd(t_all *a)
             signal(SIGQUIT, ctrl_slash);
         }
     }
-        int j = -1;
+        j = -1;
         while (++j < a->cmds_num)
 		{
 			waitpid(pid[j], &status[j], 0);
