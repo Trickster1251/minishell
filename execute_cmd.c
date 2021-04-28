@@ -107,7 +107,6 @@ void    forking(pid_t *pid, int i, int ***fd, t_all *a)
 ////////////
 ////////////
 ////////////
-////////////
 
 void     execute_cmd(t_all *a)
 {
@@ -223,7 +222,10 @@ void     execute_cmd(t_all *a)
 			waitpid(pid[j], &status[j], 0);
 			f = WSTOPSIG(status[j]);
 			if (gl_fd[0] == 0 && f != 0)
+            {
 				gl_fd[0] = errno;
+                printf("error:=%s\n", strerror(10));
+            }
 		}
         printf("code : %d\n", gl_fd[0]);
         // printf("code : %d\n", gl_fd[1]);
