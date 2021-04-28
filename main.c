@@ -986,6 +986,7 @@ void	shlvl_ini(t_all *all)
 	// 	printf("%s\n", env->key);
 	// 	tmp = tmp->next;
 	// }
+	shlvl = NULL;
 	shlvl = get_env_val(all->envp, "SHLVL");
 	if (shlvl != NULL)
 		val = ft_atoi(shlvl);
@@ -1005,8 +1006,10 @@ void	shlvl_ini(t_all *all)
 		add_key(all->envp, "SHLVL", ft_itoa(val));
 	}
 	logname = get_env_val(all->envp, "LOGNAME");
-	// if (logname != NULL)
-	// 	add_key(all->envp, "HOME", ft_strjoin("/Users/", logname));
+	if (shlvl)
+		free(shlvl);
+	if (logname != NULL)
+		add_key(all->envp, "HOME", ft_strjoin("/Users/", logname));
 }
 
 int		main(int ac, char **av, char **envp)
@@ -1068,17 +1071,3 @@ int		main(int ac, char **av, char **envp)
 	ft_putchar_fd('\n', 1);
 	return (0);
 }
-
-
-// int main(int ac, char **av, char **envp)
-// {
-// 	t_all *all;
-// 	char str[2000];
-
-// 	all = init_all(envp);
-// 	new_line(all, str);
-// 	all->pos--;
-// 	all->hist_len--;
-// 	printf("!!!!!-\n");
-// 	parser(all);
-// }

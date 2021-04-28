@@ -244,7 +244,7 @@ void     execute_cmd(t_all *a)
 			f = WSTOPSIG(status[j]);
 			if (f != 0)
 			{
-				// gl_fd[0] = errno;
+				gl_fd[0] = errno;
 				// printf("%s\n", strerror(errno));
 			}
 		}
