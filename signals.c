@@ -15,7 +15,7 @@ void    ctrl_c(int sig)
 {
     if (gl_fd[1] == 0)
     {
-        write(1, "^C\n", 3);
+        write(1, "\n", 1);
         gl_fd[0] = 130;
     }
 }
