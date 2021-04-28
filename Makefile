@@ -5,6 +5,8 @@ SRCS	=	./gnl/get_next_line.c\
 			./main.c \
 			./execute_cmd.c \
 			./ft_echo.c \
+			./signals.c \
+			./redirect.c \
 			./ft_pwd.c \
 			ft_lists_utils.c \
 			./builtins_function.c \

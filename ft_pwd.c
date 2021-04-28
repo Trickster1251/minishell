@@ -23,11 +23,7 @@ void    ft_exit(t_cmd *cmd)
 }
 
 //Готово
-
-//cd 
-//old_pwd = pwd;
-//pwd = 
-void    ft_cd(t_cmd *cmd, t_list *lst)
+void    ft_cd(t_cmd *cmd, t_list *lst, t_list *exp)
 {
     gl_fd[0] = 0;
     char *pwd;
@@ -42,14 +38,8 @@ void    ft_cd(t_cmd *cmd, t_list *lst)
         }
         cmd->argv[1] = pwd;
     }
-    printf("HELLLLLO\n");
-
-
-
-// Сделать норм историю
     char dir[1000];
-    char *dir1 = getcwd(dir, 1000);
-    set_value(lst, "OLDPWD", dir1);
+    char *dir1;
 
     if ((chdir(cmd->argv[1])) == -1)
     {
@@ -59,7 +49,11 @@ void    ft_cd(t_cmd *cmd, t_list *lst)
     else
     {
         dir1 = getcwd(dir, 1000);
-        set_value(lst, "PWD", dir1);
+        printf("%s\n", dir1);
+        add_key(lst, "PWD", dir1);
+        add_key(exp, "PWD", dir1);
+        // set_value(lst, "PWD", dir1);
+        // set_value(exp, "PWD", dir1);
     }
 }
 

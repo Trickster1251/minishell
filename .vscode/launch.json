@@ -8,7 +8,7 @@
 			"name": "gcc - Build and debug active file",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "/Users/aemustaf/Documents/for_my_github/minishell_v.1.1/minishell",
+			"program": "/Users/walethea/minish/minishell",
 			"args": [],
 			"stopAtEntry": true,
 			"cwd": "${workspaceFolder}",

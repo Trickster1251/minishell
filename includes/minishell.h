@@ -89,7 +89,7 @@ typedef struct s_all
 int		gl_fd[4];
 
 void     execute_cmd(t_all *all);
-void    ft_cd(t_cmd *cmd, t_list *lst);
+void    ft_cd(t_cmd *cmd, t_list *lst, t_list *exp);
 void    ft_echo(t_cmd *cmd);
 void    ft_pwd(t_cmd *cmd);
 void    ft_env(t_cmd *cmd, t_list *envp);
@@ -98,12 +98,24 @@ void    ft_unset(t_cmd *cmd, t_list *envp, t_list *exp);
 void    ft_exit(t_cmd *cmd);
 void	ft_export_arg(t_cmd * cmd, t_list *envp, t_list *exp);
 
+//Сигналы
+void    ctrl_slash(int sig);
+void    ctrl_c(int sig);
+
+//Пайпы
+int     dup_fd(int **pfd, int i, int cmd_com, t_cmd *cmd);
+
+//Редиректы
+void	create_open_fd(t_all *a, t_cmd *cmd, char **arr);
+int		is_redir_type(char *str);
+int     count_redir(char **arr);
+
 //Инициализация
-void    init_shlvl(t_list *envp, t_list *exp);
+void	init_shlvl(t_list *envp, t_list *exp);
 
 //Мелкие полезные функции не забыть добавить в либу
-int     ft_isdigit_str(char *str);
-int     is_delim(char *line);
+int		ft_isdigit_str(char *str);
+int		is_delim(char *line);
 
 // Функции для работы с листами
 int     len_arr(char **str);

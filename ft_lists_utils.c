@@ -65,21 +65,6 @@ void    add_key(t_list *lst, char *key, char *value)
     //free(env);
 }
 
-// t_list  *sorting(t_list *lst)
-// {
-//     char    **arr;
-//     t_list  *tmp = lst;
-//     int     i;
-//     char    *min;
-
-//     arr = lst_to_array(lst);
-//     i = -1;
-//     while(arr[++i]);
-//     arr = ft_sort(arr, i);
-//     lst = parse_env(arr);
-//     return (lst);
-// }
-
 void    print_lst(t_list *lst)
 {
     t_list *tmp = lst;

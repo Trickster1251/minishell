@@ -996,8 +996,8 @@ void	shlvl_ini(t_all *all)
 	}
 	add_key(all->envp, "OLD_PWD", "0");
 	logname = get_env_val(all->envp, "LOGNAME");
-	if (logname != NULL)
-		add_key(all->envp, "HOME", ft_strjoin("/Users/", logname));
+	// if (logname != NULL)
+	// 	add_key(all->envp, "HOME", ft_strjoin("/Users/", logname));
 }
 
 int		main(int ac, char **av, char **envp)
