@@ -1004,7 +1004,6 @@ void	shlvl_ini(t_all *all)
 		val++;
 		add_key(all->envp, "SHLVL", ft_itoa(val));
 	}
-	add_key(all->envp, "OLD_PWD", "0");
 	logname = get_env_val(all->envp, "LOGNAME");
 	// if (logname != NULL)
 	// 	add_key(all->envp, "HOME", ft_strjoin("/Users/", logname));
