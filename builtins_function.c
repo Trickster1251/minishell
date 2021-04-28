@@ -45,20 +45,6 @@ int     ft_isdigit_str(char *str)
     return(1);
 }
 
-void    init_shlvl(t_list *envp, t_list *exp)
-{
-    char *value;
-    value = search_key(exp, "SHLVL");
-    printf("%s\n", value);
-    set_value(envp, "SHLVL", ft_itoa((ft_atoi(value)) + 1));
-//     set_value(exp, "SHLVL", ft_itoa((ft_atoi(value)) + 1));
-//     set_value(envp, "OLDPWD", "");
-//     set_value(exp, "OLDPWD", "");
-//     free(value);
-}
-
-
-
 //Реализовать удаление по-ключу
 void    ft_unset(t_cmd *cmd, t_list *envp, t_list *exp)
 {
@@ -70,12 +56,9 @@ void    ft_unset(t_cmd *cmd, t_list *envp, t_list *exp)
     if (cmd->argv[1] != NULL)
     {
         while(++i < len && cmd->argv[i])
-        {
-            // del_key(&envp, cmd->argv[i]);
             del_key(&exp, cmd->argv[i]);
-        }
+            // del_key(&envp, cmd->argv[i]);
     }
-    // write(1,"\n",1);
 }
 
 void    del_key(t_list **lst, char *key)
@@ -118,43 +101,6 @@ void    del_key(t_list **lst, char *key)
             tmp = tmp->next;
         }
     }
-}
-
-int     max_len(char *s, char *s1)
-{
-    int len = ft_strlen(s);
-    int len1 = ft_strlen(s1);
-
-    if (len >= len1)
-        return (len);
-    return (len1);
-}
-
-// ПЕРЕПИСАТЬ ФУНКЦИЮ! ВАЖНО!
-char	**ft_sort(char **env, int size)
-{
-	int		i;
-	int		j;
-	char	*swap;
-
-	i = 0;
-	j = 1;
-	while (j <= size - 1)
-	{
-		while (i <= size - 1 - j)
-		{
-			if (ft_strncmp(env[i], env[i + 1], is_min(is_delim(env[i]), is_delim(env[i + 1]))) > 0)
-			{
-				swap = env[i];
-				env[i] = env[i + 1];
-				env[i + 1] = swap;
-			}
-			i++;
-		}
-		i = 0;
-		j++;
-	}
-	return (env);
 }
 
 int		is_valid_id(char *key)

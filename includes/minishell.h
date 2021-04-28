@@ -27,11 +27,6 @@
 #include <stdlib.h>
 #include <signal.h>
 
-/*              fd[0] - stdin
-				fd[1] - stdout
-				args[0] - command name
-				command->child - next command after pipe (if it exist)
-*/
 typedef struct s_command
 {
 	char **argv;
@@ -83,7 +78,6 @@ typedef struct s_all
 	t_valid val;
 	
 } t_all;
-
 
 // Функции логики
 
@@ -141,6 +135,5 @@ char    **lst_to_argv(t_list *lst);
 void    add_key(t_list *lst, char *key, char *value);
 void	del_key(t_list **lst, char *key);
 char     *search_path(t_all *all, t_cmd *cmd, t_list *envp);
-
 
 #endif

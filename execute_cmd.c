@@ -1,8 +1,5 @@
 #include "includes/minishell.h"
 
-// Лики в unset
-// Сделать сортировку в export, и возможность канкатенировать переменные
-
 void    print_arr(char **arr)
 {
     int     i;
@@ -13,9 +10,7 @@ void    print_arr(char **arr)
     {
         j = -1;
         while(arr[i][++j])
-        {
             write(1,&arr[i][j],1);
-        }
         write(1,"\n",1);
     }
 }
@@ -221,9 +216,7 @@ void     execute_cmd(t_all *a)
             if (pid[i] != 0)
             {
                 if (pfd != NULL && i < a->cmds_num  -1)
-                {
                     close(pfd[i][1]);
-                }
             }
             if (pid[i] == 0)
             {
@@ -234,7 +227,6 @@ void     execute_cmd(t_all *a)
                     dup2(a->cmds[i].fd[0], 0);
                     dup2(a->cmds[i].fd[1], 1);
                 }
-                int res;
                 if (path == NULL)
                     exit(127);
                 exec_command(a, &a->cmds[i], a->envp, path);
@@ -243,13 +235,14 @@ void     execute_cmd(t_all *a)
             signal(SIGQUIT, ctrl_slash);
         }
     }
-      for (int j = 0; j < a->cmds_num; j++)
+        int j = -1;
+        while (++j < a->cmds_num)
 		{
 			waitpid(pid[j], &status[j], 0);
 			f = WSTOPSIG(status[j]);
 			if (f != 0)
-				gl_fd[0] = 1;
+				gl_fd[0] = errno;
 		}
         printf("code : %d\n", gl_fd[0]);
-        printf("code : %d\n", gl_fd[1]);
+        // printf("code : %d\n", gl_fd[1]);
 }

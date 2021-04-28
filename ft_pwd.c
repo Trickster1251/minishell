@@ -1,6 +1,5 @@
 #include "includes/minishell.h"
 
-//Готов
 void    ft_exit(t_cmd *cmd)
 {
     printf("exit\n");
@@ -25,7 +24,6 @@ void    ft_exit(t_cmd *cmd)
 //Готово
 void    ft_cd(t_cmd *cmd, t_list *lst, t_list *exp)
 {
-    gl_fd[0] = 0;
     char *pwd;
     if (!cmd->argv[1])
     {
@@ -48,16 +46,14 @@ void    ft_cd(t_cmd *cmd, t_list *lst, t_list *exp)
     }
     else
     {
-        dir1 = getcwd(dir, 1000);
-        printf("%s\n", dir1);
+        dir1 = ft_strdup(getcwd(dir, 1000));
+        printf("this is pwd:=%s\n", dir1);
         add_key(lst, "PWD", dir1);
         add_key(exp, "PWD", dir1);
-        // set_value(lst, "PWD", dir1);
-        // set_value(exp, "PWD", dir1);
     }
+    gl_fd[0] = 0;
 }
 
-//Готово
 void    ft_env(t_cmd *cmd, t_list *envp)
 {
     if (cmd->argv[1] == NULL)
@@ -69,7 +65,6 @@ void    ft_env(t_cmd *cmd, t_list *envp)
     }
 }
 
-//Готово
 void    ft_pwd(t_cmd *cmd)
 {
     char dir[1000];

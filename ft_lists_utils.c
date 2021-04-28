@@ -99,33 +99,10 @@ int     who_more(char *str, char *str1)
     return (ft_strlen(str1));
 }
 
-// void    sorting(char **arr)
-// {
-//     char     *smallest = arr[0];
-//     int     i = 0;
-//     int     len = 0;
-//     char    *tmp;
-//     while(arr[++i])
-//     {
-//         len = who_more(smallest, arr[i]);
-//         if (ft_strncmp(smallest, arr[i], (size_t)len) > 0)
-//         {
-//             tmp = smallest;
-//             smallest = arr[i];
-//             arr[i] = tmp;
-//         }
-//     }
-//     return (arr);
-// }
-
-
 void    print_export(t_list **lst)
 {
     t_list *tmp = (*lst);
     t_env *env;
-
-    // char **envp = lst_to_array(&lst);
-    
 
     while(tmp)
     {
