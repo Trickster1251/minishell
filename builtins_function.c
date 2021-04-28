@@ -20,11 +20,17 @@ t_list *parse_env(char **env)
 				if (!tmp)
 					return (NULL);
 				tmp->key = ft_substr(*env, 0, tmp_str - *env);
-				// if (tmp->key != NULL)
+				if (tmp->key != NULL)
 					tmp->value = ft_strdup(tmp_str + 1);
 				// else
 				// 	tmp->value = NULL;
-				ft_lstadd_back(&lst, ft_lstnew(tmp));
+				if (ft_strncmp(tmp->key, "OLDPWD", 7))
+					ft_lstadd_back(&lst, ft_lstnew(tmp));
+				else
+					{
+						free(tmp->key);
+						free(tmp->value);
+					}
 				break;
 			}
 			tmp_str++;
