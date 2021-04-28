@@ -28,6 +28,8 @@ char     *search_path(t_all *all, t_cmd *cmd, t_list *envp)
     env = lst_to_array(envp);
     i = -1;
     gl_fd[0] = 0;
+
+	
     while(path[++i] && cmd->fd[0] != -1 && cmd->fd[1] != -1)
     {
         if (lstat(ft_strjoin(path[i], comd), &buf) == 0)
@@ -241,7 +243,10 @@ void     execute_cmd(t_all *a)
 			waitpid(pid[j], &status[j], 0);
 			f = WSTOPSIG(status[j]);
 			if (f != 0)
-				gl_fd[0] = errno;
+			{
+				// gl_fd[0] = errno;
+				// printf("%s\n", strerror(errno));
+			}
 		}
         printf("code : %d\n", gl_fd[0]);
         // printf("code : %d\n", gl_fd[1]);
