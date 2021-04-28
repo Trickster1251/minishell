@@ -59,10 +59,10 @@ void    add_key(t_list *lst, char *key, char *value)
     else
         set_value(lst, key, value);
 	if (tmp != NULL)
+	{
 		free(tmp);
-//    free(env->value);
-//    free(env->key);
-    //free(env);
+		free(env);
+	}
 }
 
 void    print_lst(t_list *lst)

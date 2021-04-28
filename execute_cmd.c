@@ -48,8 +48,8 @@ char     *search_path(t_all *all, t_cmd *cmd, t_list *envp)
 void    exec_command(t_all *all, t_cmd *cmd, t_list *envp, char *path)
 {
     char        **env = lst_to_array(envp);
-    char        *comd = ft_strjoin("/", cmd->argv[0]);
     struct stat buf;
+	int i;
 	
     if (lstat(cmd->argv[0], &buf) == 0)
         execve(path, cmd->argv, env);

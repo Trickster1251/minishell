@@ -30,6 +30,7 @@ t_list *parse_env(char **env)
 					{
 						free(tmp->key);
 						free(tmp->value);
+						free(tmp);
 					}
 				break;
 			}

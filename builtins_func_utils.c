@@ -50,7 +50,6 @@ char    **lst_to_array(t_list *lst)
     {
         env = tmp->content;
         // len_str = ft_strlen(env->key) + ft_strlen(env->value) + 2;
-        arr[i] = ft_strdup("");
         // arr[i] = ft_calloc(sizeof(char), len_str);
         // bzero(arr[i], len_str);
         key = ft_strjoin(env->key, "=");

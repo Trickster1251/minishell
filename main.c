@@ -786,9 +786,9 @@ int		make_struct(t_all *all, char *str)
 
 	///
 	execute_cmd(all);
-	// free(argv);
-	// free (cmds);
-	// free_cmd(all);
+	free(argv);
+	free (cmds);
+	free_cmd(all);
 	return (0);
 }
 
@@ -992,7 +992,6 @@ void	shlvl_ini(t_all *all)
 		val = ft_atoi(shlvl);
 	else
 		return ;
-	printf("%d\n", val);
 	if (val < 0)
 		add_key(all->envp, "SHLVL", "0");
 	else if (val >= 1000)
@@ -1008,8 +1007,8 @@ void	shlvl_ini(t_all *all)
 	logname = get_env_val(all->envp, "LOGNAME");
 	if (shlvl)
 		free(shlvl);
-	if (logname != NULL)
-		add_key(all->envp, "HOME", ft_strjoin("/Users/", logname));
+	// if (logname != NULL)
+	// 	add_key(all->envp, "HOME", ft_strjoin("/Users/", logname));
 }
 
 int		main(int ac, char **av, char **envp)
@@ -1071,3 +1070,17 @@ int		main(int ac, char **av, char **envp)
 	ft_putchar_fd('\n', 1);
 	return (0);
 }
+
+// int main(int ac, char **av, char **envp)
+// {
+// 	t_all *all;
+// 	char str[2000];
+
+// 	all = init_all(envp);
+// 	shlvl_ini(all);
+// 	new_line(all, str);
+// 	all->pos--;
+// 	all->hist_len--;
+// 	parser(all);
+// 	while(1);
+// }
