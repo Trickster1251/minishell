@@ -701,6 +701,7 @@ int		m_struct(t_all *all, char ***argv) //ошибка
 	i = 0;
 	while(i < all->cmds_num)
 	{
+		all->cmds[i].args_num = argv_len(argv[i]);
 		all->cmds[i].argv = argv[i];
 		i++;
 	}
@@ -738,11 +739,13 @@ void	free_cmd(t_all *all)
 		while (i < all->cmds_num)
 		{
 			j = 0;
-			while(all->cmds[i].argv[j])
-			{
-				free(all->cmds[i].argv[j]);
-				j++;
-			}
+			// while(j < all->cmds[i].args_num)
+			// {
+			// 	printf("%p\n", all->cmds[i].argv[j]);
+			// 	if (all->cmds[i].argv[j])
+			// 		free(all->cmds[i].argv[j]);
+			// 	j++;
+			// }
 			free(all->cmds[i].argv);
 			i++;
 		}
@@ -785,6 +788,17 @@ int		make_struct(t_all *all, char *str)
 
 
 	///
+	int j;
+	while (i < all->cmds_num)
+	{
+		j = 0;
+		while (all->cmds[i].argv[j])
+		{
+			printf("%p\n", all->cmds[i].argv[j]);
+			j++;
+		}
+		i++;
+	}
 	execute_cmd(all);
 	free(argv);
 	free (cmds);

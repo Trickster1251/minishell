@@ -242,8 +242,8 @@ void     execute_cmd(t_all *a)
 					exec_command(a, &a->cmds[i], a->envp, path);
 				}
 			}
-			if (path)	
-				free(path); // ЕБАННОЕ ТЫ БЫДЛО, ПОЧИСТИСЬ БЛЯТБ
+			// if (path)	
+			// 	free(path); // ЕБАННОЕ ТЫ БЫДЛО, ПОЧИСТИСЬ БЛЯТБ
 			signal(SIGINT, ctrl_c);
 			signal(SIGQUIT, ctrl_slash);
 		}
