@@ -165,7 +165,6 @@ void     execute_cmd(t_all *a)
 			j++;
 		}
         ///
-        ///
         if (strncmp(a->cmds[i].argv[0], "cd\0", 3) == 0)
             ft_cd (&a->cmds[i], a->envp, a->exp);
         else if (strncmp(a->cmds[i].argv[0], "echo\0", 5) == 0)
@@ -242,8 +241,8 @@ void     execute_cmd(t_all *a)
 					exec_command(a, &a->cmds[i], a->envp, path);
 				}
 			}
-			// if (path)	
-			// 	free(path); // ЕБАННОЕ ТЫ БЫДЛО, ПОЧИСТИСЬ БЛЯТБ
+			if (path && ft_strncmp(a->cmds[i].argv[0], "./minishell\0", 12))
+                free(path);
 			signal(SIGINT, ctrl_c);
 			signal(SIGQUIT, ctrl_slash);
 		}
@@ -260,5 +259,4 @@ void     execute_cmd(t_all *a)
 		}
 	}
 	printf("code : %d\n", gl_fd[0]);
-	// printf("code : %d\n", gl_fd[1]);
 }
