@@ -28,11 +28,11 @@ void    create_open_fd(t_all *a, t_cmd *cmd, char **arr)
     t_list  *lst = NULL;
     i = 0;
     if (!is_redir_type(arr[i]))
-        ft_lstadd_back(&lst, ft_lstnew(arr[i]));
+        ft_lstadd_back(&lst, ft_lstnew(ft_strdup(arr[i])));
     while(arr[++i])
     {
         if (!is_redir_type(arr[i]) && !is_redir_type(arr[i - 1]))
-            ft_lstadd_back(&lst, ft_lstnew(arr[i]));
+            ft_lstadd_back(&lst, ft_lstnew(ft_strdup(arr[i])));
         else
             what_is_redir(i, cmd, arr);
         if (errno != 0)
@@ -43,7 +43,15 @@ void    create_open_fd(t_all *a, t_cmd *cmd, char **arr)
             break ;
         }
     }
+	i = 0;
+	while (cmd->argv[i])
+	{
+		free(cmd->argv[i]);
+		i++;
+	}
+	free(cmd->argv);
     cmd->argv = lst_to_argv(lst);
+	ft_lstclear(&lst, free);
 }
 
 int     is_redir_type(char *str)

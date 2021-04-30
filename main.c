@@ -320,7 +320,7 @@ int		shield(t_all *all, t_line *src)
 				return (-1);
 			}
 		}
-		else
+		else if (src->str[src->pos] != ' ')
 			redir = 0;
 		if (src->str[src->pos] == '<')
 		{
@@ -337,7 +337,7 @@ int		shield(t_all *all, t_line *src)
 				return (-1);
 			}
 		}
-		else
+		else if (src->str[src->pos] != ' ')
 			rev_redir = 0;
 		src->pos++; 
 	}
@@ -739,13 +739,12 @@ void	free_cmd(t_all *all)
 		while (i < all->cmds_num)
 		{
 			j = 0;
-			// while(j < all->cmds[i].args_num)
-			// {
-			// 	printf("%p\n", all->cmds[i].argv[j]);
-			// 	if (all->cmds[i].argv[j])
-			// 		free(all->cmds[i].argv[j]);
-			// 	j++;
-			// }
+			while(all->cmds[i].argv[j])
+			{
+				if (all->cmds[i].argv[j])
+					free(all->cmds[i].argv[j]);
+				j++;
+			}
 			free(all->cmds[i].argv);
 			i++;
 		}
@@ -788,17 +787,6 @@ int		make_struct(t_all *all, char *str)
 
 
 	///
-	int j;
-	while (i < all->cmds_num)
-	{
-		j = 0;
-		while (all->cmds[i].argv[j])
-		{
-			printf("%p\n", all->cmds[i].argv[j]);
-			j++;
-		}
-		i++;
-	}
 	execute_cmd(all);
 	free(argv);
 	free (cmds);
