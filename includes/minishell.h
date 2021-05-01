@@ -119,7 +119,7 @@ void    ctrl_slash(int sig);
 void    ctrl_c(int sig);
 
 //Пайпы
-int     dup_fd(int **pfd, int i, int cmd_com, t_cmd *cmd);
+void     dup_fd(int **pfd, int i, int cmd_com, t_cmd *cmd);
 
 //Редиректы
 void	create_open_fd(t_all *a, t_cmd *cmd, char **arr);
