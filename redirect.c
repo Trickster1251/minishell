@@ -1,5 +1,6 @@
 #include "includes/minishell.h"
 
+
 void    what_is_redir(int i, t_cmd *cmd, char **arr)
 {
     if (ft_strncmp(arr[i - 1], "<\0", 2) == 0)

@@ -4,13 +4,20 @@ SRCS	=	./gnl/get_next_line.c\
 			./gnl/get_next_line_utils.c\
 			./main.c \
 			./execute_cmd.c \
-			./ft_echo.c \
 			./signals.c \
 			./redirect.c \
-			./ft_pwd.c \
-			ft_lists_utils.c \
-			./builtins_function.c \
-			./builtins_func_utils.c \
+			./builtins_function/ft_cd.c \
+			./builtins_function/ft_pwd.c \
+			./builtins_function/ft_export.c \
+			./builtins_function/ft_env.c \
+			./builtins_function/ft_echo.c \
+			./builtins_function/ft_exit.c \
+			./builtins_function/ft_unset.c \
+			./ft_pipes.c \
+			./builtins_function/exec_builtins_func.c \
+			./lists_utils.c \
+			./lists_utils1.c \
+			./func_utils.c \
 				
 FLAGS	=	-Wall -Wextra -Werror
 LIBFT	=	 -L./libft -lft

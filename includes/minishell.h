@@ -103,6 +103,17 @@ void    ft_unset(t_cmd *cmd, t_list *envp, t_list *exp);
 void    ft_exit(t_cmd *cmd);
 void	ft_export_arg(t_cmd * cmd, t_list *envp, t_list *exp);
 
+//
+
+int		is_valid_id(char *key);
+
+int    **pipes_fd(t_all *a);
+void    forking(pid_t *pid, int i, int ***fd, t_all *a);
+void	exec_echo(t_all *a, pid_t *pid, int i, int **pfd);
+void	exec_env(t_all *a, pid_t *pid, int i, int **pfd);
+void	exec_export(t_all *a, pid_t *pid, int i, int **pfd);
+void	exec_pwd(t_all *a, pid_t *pid, int i, int **pfd);
+
 //Сигналы
 void    ctrl_slash(int sig);
 void    ctrl_c(int sig);
