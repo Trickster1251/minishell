@@ -22,17 +22,6 @@ void    what_is_redir(int i, t_cmd *cmd, char **arr)
     }
 }
 
-    //  if (!is_redir_type(arr[i]) && !is_redir_type(arr[i - 1]))
-    //     {
-    //         char *str = ft_strdup(arr[i]);
-    //         ft_lstadd_back(&lst, ft_lstnew(str));
-    //         free(str);
-    //     }
-
-//echo sadsdaf sd > a 3 leasks
-//echo sadsdaf > a 2 leasks
-//echo sadsdaf > a b
-
 void    create_open_fd(t_all *a, t_cmd *cmd, char **arr)
 {
     int     i;
@@ -44,10 +33,8 @@ void    create_open_fd(t_all *a, t_cmd *cmd, char **arr)
     {
         if (!is_redir_type(arr[i]) && !is_redir_type(arr[i - 1]))
         {
-            // ft_lstadd_back(&lst, ft_lstnew(ft_strdup(arr[i])));
             char *str = ft_strdup(arr[i]);
             ft_lstadd_back(&lst, ft_lstnew(str));
-            // free(str);
         }
         else
             what_is_redir(i, cmd, arr);

@@ -135,6 +135,78 @@ void    forking(pid_t *pid, int i, int ***fd, t_all *a)
 ////////////
 ////////////
 
+void	exec_echo(t_all *a, pid_t *pid, int i, int **pfd)
+{
+	pid[i] = fork();
+	forking(pid, i, &pfd, a);
+	if (pid[i] == 0)
+	{
+		ft_echo(a->cmds);
+		exit (0);
+	}
+	gl_fd[0] = 0;
+}
+
+void	exec_env(t_all *a, pid_t *pid, int i, int **pfd)
+{
+	pid[i] = fork();
+	forking(pid, i, &pfd, a);
+	if (pid[i] == 0)
+	{
+		if (a->cmds[i].argv[1] == NULL)
+			print_env(a->envp);
+		else
+		{
+			printf("env: %s: No such file or directory\n", a->cmds[i].argv[1]);
+			gl_fd[0] = 1;
+		}
+		exit(0);
+	}
+}
+
+void    init_values(t_all *a, int i)
+{
+	int     j;
+
+	j = -1;
+	a->cmds[i].fd[0] = 0;
+	a->cmds[i].fd[1] = 1;
+	a->cmds[i].count_redir = 0;
+	a->cmds[i].count_redir = count_redir(a->cmds[i].argv);
+	if (a->cmds[i].count_redir != 0)
+		create_open_fd(a, &a->cmds[i], a->cmds[i].argv);
+	while (a->cmds[i].argv[++j])
+		unshield(a->cmds[i].argv[j]);
+}
+
+void	exec_pwd(t_all *a, pid_t *pid, int i, int **pfd)
+{
+	pid[i] = fork();
+	forking(pid, i, &pfd, a);
+	if (pid[i] == 0)
+	{
+		ft_pwd(a->cmds);
+		exit(gl_fd[0]);
+	}
+}
+
+void	exec_export(t_all *a, pid_t *pid, int i, int **pfd)
+{
+	if (a->cmds[i].argv[1] == NULL)
+	{
+		pid[i] = fork();
+		forking(pid, i, &pfd, a);
+		if (pid[i] == 0)
+        {
+			print_export(&a->exp);
+            exit(0);
+        }
+	}
+	else
+		ft_export_arg(a->cmds, a->envp, a->exp);
+}
+
+
 void     execute_cmd(t_all *a)
 {
     int     i;
@@ -152,65 +224,18 @@ void     execute_cmd(t_all *a)
         pfd = pipes_fd(a);
     while(++i < a->cmds_num)
     {
-        a->cmds[i].fd[0] = 0;
-        a->cmds[i].fd[1] = 1;
-        a->cmds[i].count_redir = 0;
-        a->cmds[i].count_redir = count_redir(a->cmds[i].argv);
-        if (a->cmds[i].count_redir != 0)
-            create_open_fd(a, &a->cmds[i], a->cmds[i].argv);
-		j = 0;
-		while (a->cmds[i].argv[j])
-		{
-			unshield(a->cmds[i].argv[j]);
-			j++;
-		}
-        ///
+        init_values(a, i);    
+
         if (strncmp(a->cmds[i].argv[0], "cd\0", 3) == 0)
             ft_cd (&a->cmds[i], a->envp, a->exp);
         else if (strncmp(a->cmds[i].argv[0], "echo\0", 5) == 0)
-        {
-            pid[i] = fork();
-            forking(pid, i, &pfd, a);
-            if (pid[i] == 0)
-            {
-                ft_echo(a->cmds);
-                exit (0);
-            }
-            gl_fd[0] = 0;
-        }
+            exec_echo(a, pid, i, pfd);
         else if (strncmp(a->cmds[i].argv[0], "pwd\0", 4) == 0)
-        {
-            pid[i] = fork();
-            forking(pid, i, &pfd, a);
-            if (pid[i] == 0)
-            {
-                ft_pwd(a->cmds);
-                exit (gl_fd[0]);
-            }
-        }
+            exec_pwd(a, pid, i, pfd);
         else if (strncmp(a->cmds[i].argv[0], "env\0", 4) == 0)
-        {
-            pid[i] = fork();
-            forking(pid, i, &pfd, a);
-            if (pid[i] == 0)
-            {
-                ft_env(a->cmds, a->envp);
-                exit (0);
-            }
-        }
+            exec_env(a, pid, i, pfd);
         else if (strncmp(a->cmds[i].argv[0], "export\0", 7) == 0)
-        {
-            pid[i] = fork();
-            forking(pid, i, &pfd, a);
-            if (pid[i] == 0)
-            {
-                if (a->cmds[i].argv[1] == NULL)
-					ft_export(a->cmds, a->envp, a->exp);
-			    else
-				ft_export_arg(a->cmds, a->envp, a->exp);
-                exit (gl_fd[0]);
-			}
-		}
+            exec_export(a, pid, i, pfd);
 		else if (strncmp(a->cmds[i].argv[0], "unset\0", 6) == 0)
 			ft_unset(a->cmds, a->envp, a->exp);
 		else if (strncmp(a->cmds[i].argv[0], "exit\0", 6) == 0)
@@ -238,7 +263,8 @@ void     execute_cmd(t_all *a)
 					exit(127);
 				else
 				{
-					exec_command(a, &a->cmds[i], a->envp, path);
+                    char    **env = lst_to_array(a->envp);
+                    execve(path, a->cmds[i].argv, env);
 				}
 			}
 			if (path && ft_strncmp(a->cmds[i].argv[0], "./minishell\0", 12))
@@ -255,7 +281,7 @@ void     execute_cmd(t_all *a)
 		if (gl_fd[0] == 0 && f != 0)
 		{
 			gl_fd[0] = errno;
-			printf("error:=%s\n", strerror(10));
+			// printf("error:=%s\n", strerror(10));
 		}
 	}
 	printf("code : %d\n", gl_fd[0]);
