@@ -1,15 +1,16 @@
 #include "../includes/minishell.h"
 
-void    print_env(t_list *lst)
+void	print_env(t_list *lst)
 {
-    t_list *tmp = lst;
-    t_env *env;
+	t_list	*tmp;
+	t_env	*env;
 
-    while(tmp)
-    {
-        env = tmp->content;
+	tmp = lst;
+	while (tmp)
+	{
+		env = tmp->content;
 		if (env->value != NULL)
-        	printf("%s=%s\n", env->key, env->value);
-        tmp = tmp->next;
-    }
+			printf("%s=%s\n", env->key, env->value);
+		tmp = tmp->next;
+	}
 }
