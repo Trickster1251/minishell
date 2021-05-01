@@ -70,9 +70,9 @@ char    **lst_to_argv(t_list *lst)
 
     while(tmp)
     {
-        len_str = ft_strlen(tmp->content) + 1;
-        arr[i] = ft_calloc(sizeof(char), len_str);
-        bzero(arr[i], len_str);
+        // len_str = ft_strlen(tmp->content) + 1;
+        // arr[i] = ft_calloc(sizeof(char), len_str);
+        // bzero(arr[i], len_str);
         arr[i] = ft_strdup(tmp->content);
         tmp = tmp->next;
         i++;

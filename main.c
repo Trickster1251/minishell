@@ -473,6 +473,19 @@ int		argv_len(char **argv)
 	return (i);
 }
 
+
+int		check_redir(char **argv)
+{
+	int i;
+
+	i = 0;
+	i = argv_len(argv);
+	if ((!ft_strncmp(argv[0], "<", 2) || !ft_strncmp(argv[0], ">", 2)
+	|| !ft_strncmp(argv[0], "<<", 3) || !ft_strncmp(argv[0], ">>", 3)) && i == 2)
+		return (-1);
+	return (0);
+}
+
 int		check_argv(t_all *all, char **argv)
 {
 	int i;
@@ -688,6 +701,7 @@ char**	tokenize(char *str, t_all *all)
 	//free(tmp);
 	free(str);
 	//free(tmp_redir);
+	i = 0;
 	return (res);
 }
 
@@ -753,6 +767,19 @@ void	free_cmd(t_all *all)
 	}
 }
 
+void free_argv(char **argv)
+{
+	int i;
+
+	i = 0;
+	while (argv[i])
+	{
+		free(argv[i]);
+		i++;
+	}
+	free(argv);
+}
+
 int		make_struct(t_all *all, char *str)
 {
 	char **argv;
@@ -766,7 +793,10 @@ int		make_struct(t_all *all, char *str)
 		return (print_merror(all));
 	all->cmds_num = argv_len(argv);
 	if (check_argv(all, argv) < 0)
+	{
+		free_argv(argv);
 		return (-1);
+	}
 	cmds = (char***)malloc(sizeof(char**) * (all->cmds_num + 1));
 	if (!cmds)
 		return(print_merror(all));
@@ -776,6 +806,13 @@ int		make_struct(t_all *all, char *str)
 		new_argv = tokenize(argv[i], all);
 		if (!new_argv)
 			return (-1);
+		if (check_redir(new_argv) < 0)
+		{
+			free(argv);
+			free_argv(new_argv);
+			free(cmds);
+			return (-1);
+		}
 		cmds[i] = new_argv;
 		i++;
 	}
