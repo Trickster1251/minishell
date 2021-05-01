@@ -109,27 +109,52 @@ int    **pipes_fd(t_all *a)
 
 void    forking(pid_t *pid, int i, int ***fd, t_all *a)
 {
-    int     **pfd = *fd;
-    if (pid[i] != 0)
-    {
-        if (pfd != NULL && i < a->cmds_num - 1)
-        {
-            dup2(a->cmds[i].fd[1], 1);
-            close(pfd[i][1]);
-        }
-    }
-    else if (pid[i] == 0)
-    {
-        if (a->cmds_num > 1)
-            dup_fd(pfd, i, a->cmds_num, a->cmds);
-        else
-        {
-            dup2(a->cmds[i].fd[0], 0);
-            dup2(a->cmds[i].fd[1], 1);
-        }
-    }
-    return ;
+	int     **pfd;
+
+	pfd = *fd;
+	if (pid[i] != 0)
+	{
+		if (pfd != NULL && i < a->cmds_num - 1)
+		{
+			dup2(a->cmds[i].fd[1], 1);
+			close(pfd[i][1]);
+		}
+	}
+	else if (pid[i] == 0)
+	{
+		if (a->cmds_num > 1)
+			dup_fd(pfd, i, a->cmds_num, a->cmds);
+		else
+		{
+			dup2(a->cmds[i].fd[0], 0);
+			dup2(a->cmds[i].fd[1], 1);
+		}
+	}
 }
+
+// void    forking(pid_t *pid, int i, int ***fd, t_all *a)
+// {
+//     int     **pfd = *fd;
+//     if (pid[i] != 0)
+//     {
+//         if (pfd != NULL && i < a->cmds_num - 1)
+//         {
+//             dup2(a->cmds[i].fd[1], 1);
+//             close(pfd[i][1]);
+//         }
+//     }
+//     else if (pid[i] == 0)
+//     {
+//         if (a->cmds_num > 1)
+//             dup_fd(pfd, i, a->cmds_num, a->cmds);
+//         else
+//         {
+//             dup2(a->cmds[i].fd[0], 0);
+//             dup2(a->cmds[i].fd[1], 1);
+//         }
+//     }
+//     return ;
+// }
 
 ////////////
 ////////////
@@ -206,7 +231,6 @@ void	exec_export(t_all *a, pid_t *pid, int i, int **pfd)
 		ft_export_arg(a->cmds, a->envp, a->exp);
 }
 
-
 void     execute_cmd(t_all *a)
 {
     int     i;
@@ -240,33 +264,21 @@ void     execute_cmd(t_all *a)
 			ft_unset(a->cmds, a->envp, a->exp);
 		else if (strncmp(a->cmds[i].argv[0], "exit\0", 6) == 0)
 			ft_exit(a->cmds);
-		///ВЫПОЛНЕНИЕ БИНАРНЫХ КОМАНД
 		else
 		{
 			path = search_path(a, &a->cmds[i], a->envp);
 			pid[i] = fork();
-			if (pid[i] != 0)
-			{
-				if (pfd != NULL && i < a->cmds_num - 1)
-					close(pfd[i][1]);
-			}
-			if (pid[i] == 0)
-			{
-				if (a->cmds_num > 1)
-					dup_fd(pfd, i, a->cmds_num, a->cmds);
-				else
-				{
-					dup2(a->cmds[i].fd[0], 0);
-					dup2(a->cmds[i].fd[1], 1);
-				}
-				if (path == NULL)
+            forking(pid, i, &pfd, a);
+            if (pid[i] == 0)
+            {
+				if (path == NULL )
 					exit(127);
 				else
 				{
                     char    **env = lst_to_array(a->envp);
                     execve(path, a->cmds[i].argv, env);
 				}
-			}
+            }
 			if (path && ft_strncmp(a->cmds[i].argv[0], "./minishell\0", 12))
                 free(path);
 			signal(SIGINT, ctrl_c);
@@ -281,7 +293,6 @@ void     execute_cmd(t_all *a)
 		if (gl_fd[0] == 0 && f != 0)
 		{
 			gl_fd[0] = errno;
-			// printf("error:=%s\n", strerror(10));
 		}
 	}
 	printf("code : %d\n", gl_fd[0]);
