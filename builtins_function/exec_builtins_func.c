@@ -47,7 +47,10 @@ void	exec_export(t_all *a, pid_t *pid, int i, int **pfd)
 		pid[i] = fork();
 		forking(pid, i, &pfd, a);
 		if (pid[i] == 0)
+		{
 			print_export(&a->exp);
+			exit(0);
+		}
 	}
 	else
 		ft_export_arg(a->cmds, a->envp, a->exp);
