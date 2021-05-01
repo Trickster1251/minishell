@@ -50,6 +50,7 @@ void    add_key(t_list *lst, char *key, char *value)
     t_env *env;
 	char *tmp;
 
+	printf("value: %s\n", value);
     env = ft_calloc(sizeof(t_env *), 2);
     env->key = key;
     env->value = value;

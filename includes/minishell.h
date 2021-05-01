@@ -41,6 +41,14 @@ typedef struct s_env
 	char *value;
 } t_env;
 
+typedef struct s_tok
+{
+	char **res;
+	char *tmp;
+	char *tmp_redir;
+	char *str_tmp;
+} t_tok;
+
 typedef	struct s_line
 {
 	char	*str;

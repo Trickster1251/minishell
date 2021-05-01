@@ -1,6 +1,12 @@
 #include "includes/minishell.h"
 #include <string.h>
 
+int		print_merror(t_all *all)
+{
+	printf("minishell: memmory allocate error\n");
+	return (-1);
+}
+
 t_all *init_all(char **envp)
 {
 	t_all *all;
@@ -100,10 +106,7 @@ int		read_history(t_all *all)
 	}
 	t_list *tmp = all->hist_list;
 	if (fd < 0 || bytes < 0)
-	{
-		// ft_lstadd_back(&all->hist_list, ft_lstnew(ft_strdup("")));
 		return (-1);
-	}
 	return (0);
 }
 
@@ -143,10 +146,16 @@ int		hist_strjoin(t_all *all, char *str)
 	{
 		t = all->history[all->hist_len - 1];
 		all->history[all->hist_len - 1] = ft_strjoin(all->history[all->pos], str);
+		if (all->history[all->hist_len - 1] == NULL)
+			return (print_merror(all));
 		free(t);
 	}
 	else
+	{
 		all->history[all->hist_len - 1] = my_strjoin(all->history[all->hist_len - 1], str);
+		if (all->history[all->hist_len - 1] == NULL)
+			return (print_merror(all));
+	}
 	tmp->content = all->history[all->hist_len - 1];
 	return (0);
 }
@@ -179,7 +188,6 @@ void	nocanon(t_all *all)
 	all->term.c_lflag &= ~(ICANON);
 	all->term.c_lflag &= ~(ISIG);
 	tcsetattr(0, TCSANOW, &all->term);
-	//printf("%s\n", all->term_name);
 	tgetent(0, all->term_name);
 	tputs("minishell$ ", 1, ft_putint);
 	tputs(save_cursor, 1, ft_putint);
@@ -191,7 +199,6 @@ int		new_line(t_all *all, char *str)
 
 	read_history(all);
 	tmp = ft_lstlast(all->hist_list);
-	//printf("%p\n", tmp);
 	if ((all->hist_len == 0) || tmp == NULL)
 		ft_lstadd_back(&all->hist_list, ft_lstnew(ft_strdup("")));
 	else if (all->hist_len == 0 || ft_strlen(tmp->content) != 0)
@@ -204,15 +211,6 @@ int		new_line(t_all *all, char *str)
 	return (0);
 }
 
-// char	get_next_char(t_line *src)
-// {
-// 	if (!src->str)
-// 		return (-1);
-// 	if (src->pos < src->len)
-// 		src->pos++;
-// 	return (src->str[src->pos]);
-// }
-
 char	previus_char(t_line *src)
 {
 	char c;
@@ -223,6 +221,130 @@ char	previus_char(t_line *src)
 	else
 		i = src->pos;
 	return (src->str[i]);
+}
+
+void	check_quotes(t_all *all, t_line *src)
+{
+	if (src->str[src->pos] == '"' && all->val.in_dqt == 0 && all->val.in_qt == 0 && previus_char(src) != '\\')
+		all->val.in_dqt = 1;
+	else if (src->str[src->pos] == '\'' && all->val.in_qt == 0 && previus_char(src) != '\\')
+		all->val.in_qt = 1;
+	else if (src->str[src->pos] == '"' && all->val.in_dqt == 1 && all->val.in_qt == 0 && previus_char(src) != '\\')
+		all->val.in_dqt = 0;
+	else if (src->str[src->pos] == '\'' && all->val.in_qt == 1 && previus_char(src) != '\\')
+		all->val.in_qt = 0;
+}
+
+void shield_sym(t_all *all, t_line *src)
+{
+	if (src->str[src->pos] == '$' && (all->val.in_qt == 1 || previus_char(src) == '\\'))
+		src->str[src->pos] *= -1;
+	else if (src->str[src->pos] == '#' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+		src->str[src->pos] *= -1;
+	else if (src->str[src->pos] == ' ' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+		src->str[src->pos] *= -1;
+	else if (src->str[src->pos] == '>' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+		src->str[src->pos] *= -1;
+	else if (src->str[src->pos] == ';' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+		src->str[src->pos] *= -1;
+	else if (src->str[src->pos] == '<' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+		src->str[src->pos] *= -1;
+	else if (src->str[src->pos] == '&' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+		src->str[src->pos] *= -1;
+	else if (src->str[src->pos] == ' ' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+		src->str[src->pos] *= -1;
+	else if (src->str[src->pos] == '(' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+		src->str[src->pos] *= -1;
+	else if (src->str[src->pos] == ')' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+		src->str[src->pos] *= -1;
+	else if (src->str[src->pos] == '|' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+		src->str[src->pos] *= -1;
+	else if (src->str[src->pos] == '"' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+		src->str[src->pos] *= -1;
+	else if (src->str[src->pos] == '\\' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
+		src->str[src->pos] *= -1;
+	if (src->str[src->pos] == '\'' && (previus_char(src) == '\\' || all->val.in_dqt == 1))
+		src->str[src->pos] *= -1;
+}
+
+int 	is_right_syntax_pipes(t_line *src, t_all *all, int *k)
+{
+	if ((src->str[src->pos] == '|' || src->str[src->pos] == '>'
+	|| src->str[src->pos] == '<') && src->pos == src->len - 2)
+	{
+		printf("minishell: syntax error near unexpected token `newline'\n");
+		return (-1);
+	}
+	if (src->str[src->pos] == '|' && src->pos == 0)
+	{
+		printf("minishell: syntax error near unexpected token `|'\n");
+		return (-1);
+	}
+	if (src->str[src->pos] == '&')
+	{
+		printf("minishell: syntax error unexpected token `&'\n");
+		return (-1);
+	}
+	if (src->str[src->pos] == '|')
+	{
+		*k += 1;
+		if (*k > 1)
+		{
+			printf("minishell: syntax error near unexpected token `|'\n");
+			return (-1);
+		}
+	}
+	else
+		*k = 0;
+	return (0);
+}
+
+int		is_right_redir_syntax(t_all *all, t_line *src, int *redir, int *rev_redir)
+{
+	if (src->str[src->pos] == '>')
+	{
+		*redir += 1;
+		if (*redir > 2 || *rev_redir > 0)
+		{
+			printf("minishell: syntax error near unexpected token `>'\n");
+			return (-1);
+		}
+		if (src->str[src->pos + 1] == '>' && previus_char(src) == '<')
+		{
+			printf("minishell: syntax error near unexpected token `<'\n");
+			return (-1);
+		}
+		if (src->str[src->pos + 1] == '<')
+		{
+			printf("minishell: syntax error near unexpected token `<'\n");
+			return (-1);
+		}
+	}
+	else if (src->str[src->pos] != ' ')
+		*redir = 0;
+	return (0);
+}
+
+int		is_right_revd_syntax(t_all *all, t_line *src, int *rev_redir, int *redir)
+{
+	if (src->str[src->pos] == '<')
+	{
+		*rev_redir += 1;
+		if (*rev_redir > 2 || *redir > 0)
+		{
+			printf("minishell: syntax error near unexpected token `<'\n");
+			return (-1);
+		}
+
+		if (src->str[src->pos + 1] == '>' && previus_char(src) == '<')
+		{
+			printf("minishell: syntax error near unexpected token `<'\n");
+			return (-1);
+		}
+	}
+	else if (src->str[src->pos] != ' ')
+		*rev_redir = 0;
+	return (0);
 }
 
 int		shield(t_all *all, t_line *src)
@@ -238,108 +360,15 @@ int		shield(t_all *all, t_line *src)
 	rev_redir = 0;
 	while (src->str[src->pos])
 	{
-		if (src->str[src->pos] == '"' && all->val.in_dqt == 0 && all->val.in_qt == 0 && previus_char(src) != '\\')
-			all->val.in_dqt = 1;
-		else if (src->str[src->pos] == '\'' && all->val.in_qt == 0 && previus_char(src) != '\\')
-			all->val.in_qt = 1;
-		else if (src->str[src->pos] == '"' && all->val.in_dqt == 1 && all->val.in_qt == 0 && previus_char(src) != '\\')
-			all->val.in_dqt = 0;
-		else if (src->str[src->pos] == '\'' && all->val.in_qt == 1 && previus_char(src) != '\\')
-			all->val.in_qt = 0;
-		else if (src->str[src->pos] == '$' && (all->val.in_qt == 1 || previus_char(src) == '\\'))
-			src->str[src->pos] *= -1;
-		else if (src->str[src->pos] == '#' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
-			src->str[src->pos] *= -1;
-		else if (src->str[src->pos] == ' ' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
-			src->str[src->pos] *= -1;
-		else if (src->str[src->pos] == '>' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
-				src->str[src->pos] *= -1;
-		else if (src->str[src->pos] == ';' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
-			src->str[src->pos] *= -1;
-		else if (src->str[src->pos] == '<' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
-			src->str[src->pos] *= -1;
-		else if (src->str[src->pos] == '&' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
-			src->str[src->pos] *= -1;
-		else if (src->str[src->pos] == ' ' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
-			src->str[src->pos] *= -1;
-		else if (src->str[src->pos] == '(' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
-			src->str[src->pos] *= -1;
-		else if (src->str[src->pos] == ')' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
-			src->str[src->pos] *= -1;
-		else if (src->str[src->pos] == '|' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1)) //добавить "'$PATH'"
-			src->str[src->pos] *= -1;
-		else if (src->str[src->pos] == '"' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
-			src->str[src->pos] *= -1;
-		else if (src->str[src->pos] == '\\' && (all->val.in_qt == 1 || previus_char(src) == '\\' || all->val.in_dqt == 1))
-			src->str[src->pos] *= -1;
-		if (src->str[src->pos] == '\'' && (previus_char(src) == '\\' || all->val.in_dqt == 1))
-			src->str[src->pos] *= -1;
-		if ((src->str[src->pos] == '|' || src->str[src->pos] == '>' || src->str[src->pos] == '<')
-		&& src->pos == src->len - 2)
-		{
-			printf("minishell: syntax error near unexpected token `newline'\n");
+		check_quotes(all, src);
+		shield_sym(all, src);
+		if (is_right_syntax_pipes(src, all, &k) < 0)
 			return (-1);
-		}
-		if (src->str[src->pos] == '|' && src->pos == 0)
-		{
-			printf("minishell: syntax error near unexpected token `|'\n");
+		if (is_right_redir_syntax(all, src, &redir, &rev_redir) < 0)
 			return (-1);
-		}
-		if (src->str[src->pos] == '&')
-		{
-			printf("minishell: syntax error unexpected token `&'\n");
-			return (-1);
-		}
-		if (src->str[src->pos] == '|')
-		{
-			k++;
-			if (k > 1)
-			{
-				printf("minishell: syntax error near unexpected token `|'\n");
-				return (-1);
-			}
-		}
-		else
-			k = 0;
-		if (src->str[src->pos] == '>')
-		{
-			redir++;
-			if (redir > 2)
-			{
-				printf("minishell: syntax error near unexpected token `>'\n");
-				return (-1);
-			}
-			if (src->str[src->pos + 1] == '>' && previus_char(src) == '<')
-			{
-				printf("minishell: syntax error near unexpected token `<'\n");
-				return (-1);
-			}
-			if (src->str[src->pos + 1] == '<')
-			{
-				printf("minishell: syntax error near unexpected token `<'\n");
-				return (-1);
-			}
-		}
-		else if (src->str[src->pos] != ' ')
-			redir = 0;
-		if (src->str[src->pos] == '<')
-		{
-			rev_redir++;
-			if (rev_redir > 2)
-			{
-				printf("minishell: syntax error near unexpected token `<'\n");
-				return (-1);
-			}
-			
-			if (src->str[src->pos + 1] == '>' && previus_char(src) == '<')
-			{
-				printf("minishell: syntax error near unexpected token `<'\n");
-				return (-1);
-			}
-		}
-		else if (src->str[src->pos] != ' ')
-			rev_redir = 0;
-		src->pos++; 
+		if (is_right_revd_syntax(all, src, &rev_redir, &redir) < 0)
+			return(-1);
+		src->pos++;
 	}
 	if (all->val.in_dqt == 1 || all->val.in_qt == 1)
 	{
@@ -349,12 +378,6 @@ int		shield(t_all *all, t_line *src)
 	return (0);
 }
 
-// int		line_vaidator(t_all *all, t_line *src)
-// {
-// 	int i;
-
-
-// }
 int 	unshield(char *str)
 {
 	int i;
@@ -403,7 +426,8 @@ int		remove_ch(t_line *src)
 	src->pos = 0;
 	while (src->str[src->pos])
 	{
-		if (src->str[src->pos] != '\\' && src->str[src->pos] != '"' && src->str[src->pos] != '\'' && src->str[src->pos] != '\n')
+		if (src->str[src->pos] != '\\' && src->str[src->pos] != '"'
+		&& src->str[src->pos] != '\'' && src->str[src->pos] != '\n')
 		{
 			tmp = ft_charjoin(tmp, src->str[src->pos]);
 			if (!tmp)
@@ -415,28 +439,6 @@ int		remove_ch(t_line *src)
 	src->str = tmp;
 	return (0);
 }
-
-// int		simple_cmd(t_all *all, char *str)
-// {
-// 	int num;
-// 	int i;
-// 	int pipe_num;
-// 	int redir_num;
-// 	int len;
-
-// 	num = 0;
-// 	i = 0;
-// 	pipe_num = 0;
-// 	len = ft_strlen(str);
-// 	all->cmds = (t_command*)malloc(sizeof(t_command));
-// 	all->cmds->args = (char**)malloc(sizeof(char*) * 1);
-// 	if (!all->cmds || !all->cmds->args)
-// 		return (-1);
-// 	while (str[i])
-// 	{
-
-// 	}
-// }
 
 char *end_var(char *s)
 {
@@ -457,11 +459,6 @@ char 	*after_var(char *s)
 	return (s);
 }
 
-int		print_merror(t_all *all)
-{
-	printf("minishell: memmory allocate error\n");
-	return (-1);
-}
 
 int		argv_len(char **argv)
 {
@@ -477,41 +474,80 @@ int		argv_len(char **argv)
 int		check_redir(char **argv)
 {
 	int i;
+	int red;
+	int rev_red;
 
+	rev_red = 0;
+	red = 0;
 	i = 0;
 	i = argv_len(argv);
 	if ((!ft_strncmp(argv[0], "<", 2) || !ft_strncmp(argv[0], ">", 2)
 	|| !ft_strncmp(argv[0], "<<", 3) || !ft_strncmp(argv[0], ">>", 3)) && i == 2)
 		return (-1);
+	i = 0;
+	while (argv[i])
+	{
+		if (!ft_strncmp(argv[i], "<", 2) ||  !ft_strncmp(argv[i], "<<", 2))
+		{
+			rev_red++;
+			if (rev_red > 1 || red > 0)
+				{
+					printf("minishell: syntax error near unexpected token `<'\n");
+					return (-1);
+				}
+		}
+		else if (!ft_strncmp(argv[i], ">", 2) || !ft_strncmp(argv[i], ">>", 3))
+		{
+			red++;
+			if (red > 1 || rev_red > 0)
+				{
+					printf("minishell: syntax error near unexpected token `>'\n");
+					return (-1);
+				}
+		}
+		else
+		{
+			rev_red = 0;
+			red = 0;
+		}
+		i++;
+	}
 	return (0);
+}
+
+int		check_sym(char *argv, int *k, char *c)
+{
+	int j;
+
+	j = 0;
+	while (argv[j])
+	{
+		if ((0 == *k || 3 == *k) && (argv[j] == '<' || argv[j] == '>'))
+		{
+			*c = argv[j];
+			*k = 1;
+		}
+		if (argv[j] == ' ' && *k == 0)
+			*k = 2;
+		if (ft_isalnum(argv[j]) || argv[j] == '_' || '$' == argv[j])
+			*k = 3;
+		j++;
+	}
+	return (j);
 }
 
 int		check_argv(t_all *all, char **argv)
 {
 	int i;
-	int j;
 	int k;
 	char c;
+	int j;
 
 	i = 0;
-	j = 0;
 	while (argv[i])
 	{
 		k = 0;
-		j = 0;
-		while (argv[i][j])
-		{
-			if ((0 == k || 3 == k) && (argv[i][j] == '<' || argv[i][j] == '>'))
-			{
-				c = argv[i][j];
-				k = 1;
-			}
-			if (argv[i][j] == ' ' && k == 0)
-				k = 2;
-			if (ft_isalnum(argv[i][j]) || argv[i][j] == '_' || '$' == argv[i][j])
-				k = 3;
-			j++;
-		}
+		j = check_sym(argv[i], &k, &c);
 		if (k == 1)
 		{	
 			printf("minishell: syntax error near unexpected token `%c'\n", c);
@@ -556,16 +592,12 @@ char	**arg_join(t_all *all, char **argv, char *str)
 
 	if (argv == NULL)
 	{
-		argv = (char**)malloc(sizeof (char*) * 2);
+		argv = (char**)ft_calloc(2, sizeof(char*));
 		if (!argv)
 			return (NULL);
-		argv[1] = NULL;
 		argv[0] = str;
 		tmp = argv;
 	}
-	/* len = 10 {q, q, q, q, q, q, q, q, q, q, NULL}
-											9  10 11
-		12		{q, q, q, q, q, q, q, q, q, q, n, NULL}							*/
 	else
 	{
 		len = argv_len(argv);
@@ -575,137 +607,138 @@ char	**arg_join(t_all *all, char **argv, char *str)
 			print_merror(all);
 			return (NULL);
 		}
-		//unshield(str);
 		tmp[len] = str;
 	}
 	return (tmp);
 }
 
+int		if_space(t_tok *tok, t_all *all, int *i)
+{
+	tok->res = arg_join(all, tok->res, tok->tmp);
+	if (!tok->tmp)
+		return (print_merror(all));
+	tok->tmp = ft_strdup("");
+	while (tok->str_tmp[*i] && tok->str_tmp[*i] == ' ')
+		*i += 1;
+	return (0);
+}
+
+int if_redir(t_all *all, t_tok *tok, int *i)
+{
+	if (tok->str_tmp[*i] == '<')
+	{
+		if (tok->str_tmp[*i + 1] == '<')
+		{
+			tok->tmp_redir = ft_strdup("<<");
+			if (!tok->tmp_redir)
+				return (print_merror(all));
+			*i += 1;
+		}
+		else
+		{
+			tok->tmp_redir = ft_strdup("<");
+			if (!tok->tmp_redir)
+				return (print_merror(all));
+		}
+		if (!ft_strncmp(tok->tmp, "", 2))
+			tok->res = arg_join(all, tok->res, tok->tmp_redir);
+		else
+		{
+			tok->res = arg_join(all, tok->res, tok->tmp);
+			tok->res = arg_join(all, tok->res, tok->tmp_redir);
+			tok->tmp = ft_strdup("");
+		}
+	}
+	return (0);
+}
+
+int if_char(t_all *all, t_tok *tok, int *i)
+{
+	if (tok->str_tmp[*i] != ' ' && tok->str_tmp[*i] != '<'
+	&& tok->str_tmp[*i] != '>')
+	{
+		tok->tmp = ft_charjoin(tok->tmp, tok->str_tmp[*i]);
+		if (!tok->tmp)
+			return (print_merror(all));
+	}
+	if (tok->str_tmp[*i + 1] == '\0' && tok->str_tmp[*i] != '<' 
+	&& tok->str_tmp[*i] != '>' && tok->str_tmp[*i] != ' ')
+	{
+		tok->res = arg_join(all, tok->res, tok->tmp);
+		if (!tok->tmp)
+			return (print_merror(all));
+	}
+	return (0);
+}
+
+int		if_rev_redir(t_all *all, t_tok *tok, int *i)
+{
+	if (tok->str_tmp[*i] == '>')
+	{
+		if (tok->str_tmp[*i + 1] == '>')
+		{
+			tok->tmp_redir = ft_strdup(">>");
+			if (!tok->tmp_redir)
+				return (print_merror(all));
+			*i += 1;
+		}
+		else
+		{
+			tok->tmp_redir = ft_strdup(">");
+			if (!tok->tmp_redir)
+				return (print_merror(all));
+		}
+		if (!ft_strncmp(tok->tmp, "", 2))
+			tok->res = arg_join(all, tok->res, tok->tmp_redir);
+		else
+		{
+			tok->res = arg_join(all, tok->res, tok->tmp);
+			tok->res = arg_join(all, tok->res, tok->tmp_redir);
+			tok->tmp = ft_strdup("");
+		}
+	}
+	return (0);
+}
+
 char**	tokenize(char *str, t_all *all)
 {
 	int i;
-	char **res;
-	char *tmp;
-	char *tmp_redir;
-	char *str_tmp;
+	t_tok tok;
 
 	i = 0;
-	res = NULL;
-	str_tmp = ft_strtrim(str, " ");
-	tmp = ft_strdup("");
-	while(str_tmp[i])
+	tok.res = NULL;
+	tok.str_tmp = ft_strtrim(str, " ");
+	tok.tmp = ft_strdup("");
+	while(tok.str_tmp[i])
 	{
-		tmp_redir = NULL;
-		if (!tmp)
+		tok.tmp_redir = NULL;
+		if (!tok.tmp)
 		{
 			print_merror(all);
 			return (NULL);
 		}
-		if (str_tmp[i] == ' ')
+		if (tok.str_tmp[i] == ' ')
 		{
-			if (i > 0 && str_tmp[i - 1] != ' ' && str_tmp[i - 1] != '<' && str_tmp[i - 1] != '>')
+			if (i > 0 && tok.str_tmp[i - 1] != ' ' && tok.str_tmp[i - 1] != '<'
+			&& tok.str_tmp[i - 1] != '>')
 			{
-				res = arg_join(all, res, tmp);
-				if (!tmp)
-				{
-					print_merror(all);
+				if (if_space(&tok, all, &i) < 0)
 					return (NULL);
-				}
-				tmp = ft_strdup("");
-				while (str_tmp[i] && str_tmp[i] == ' ')
-					i++;
 				continue ;
 			}
 		}
-		if (str_tmp[i] != ' ' && str_tmp[i] != '<' && str_tmp[i] != '>')
-		{
-			tmp = ft_charjoin(tmp, str_tmp[i]);
-			if (!tmp)
-			{
-				print_merror(all);
-				return (NULL);
-			}
-		}
-		if (str_tmp[i + 1] == '\0' && str_tmp[i] != '<' && str_tmp[i] != '>' && str_tmp[i] != ' ')
-		{
-			res = arg_join(all, res, tmp);
-			if (!tmp)
-			{
-				print_merror(all);
-				return (NULL);
-			}
-		}
-		if (str_tmp[i] == '<')
-		{
-			if (str_tmp[i + 1] == '<')
-			{
-				tmp_redir = ft_strdup("<<");
-				if (!tmp_redir)
-				{
-					print_merror(all);
-					return (NULL);
-				}
-				i++;
-			}
-			else
-			{
-				tmp_redir = ft_strdup("<");
-				if (!tmp_redir)
-				{
-					print_merror(all);
-					return (NULL);
-				}
-			}
-			if (!ft_strncmp(tmp, "", 2))
-				res = arg_join(all, res, tmp_redir);
-			else
-			{
-				res = arg_join(all, res, tmp);
-				res = arg_join(all, res, tmp_redir);
-				tmp = ft_strdup("");
-			}
-		}
-		if (str_tmp[i] == '>')
-		{
-			if (str_tmp[i + 1] == '>')
-			{
-				tmp_redir = ft_strdup(">>");
-				if (!tmp_redir)
-				{
-					print_merror(all);
-					return (NULL);
-				}
-				i++;
-			}
-			else
-			{
-				tmp_redir = ft_strdup(">");
-				if (!tmp_redir)
-				{
-					print_merror(all);
-					return (NULL);
-				}
-			}
-			if (!ft_strncmp(tmp, "", 2))
-				res = arg_join(all, res, tmp_redir);
-			else
-			{
-				res = arg_join(all, res, tmp);
-				res = arg_join(all, res, tmp_redir);
-				tmp = ft_strdup("");
-			}
-		}
+		if (if_char(all, &tok, &i) < 0 || if_redir(all, &tok, &i) < 0
+		|| if_rev_redir(all, &tok, &i) < 0)
+			return (NULL);
 		i++;
 	}
-	free(str_tmp);
-	//free(tmp);
-	free(str);
-	//free(tmp_redir);
+	free(tok.str_tmp);
+	free(str);;
 	i = 0;
-	return (res);
+	return (tok.res);
 }
 
-int		m_struct(t_all *all, char ***argv) //ошибка
+int		m_struct(t_all *all, char ***argv)
 {
 	int i;
 
@@ -720,26 +753,6 @@ int		m_struct(t_all *all, char ***argv) //ошибка
 		i++;
 	}
 	return (0);
-}
-
-void	print_command(t_all *all)
-{
-	int i;
-	int j;
-	char *s;
-
-	i = 0;
-	while (i < all->cmds_num)
-	{
-		j = 0;
-		while (all->cmds[i].argv[j])
-		{
-			s = all->cmds[i].argv[j];
-			printf("%s\n", s);
-			j++;
-		}
-		i++;
-	}
 }
 
 void	free_cmd(t_all *all)
@@ -780,6 +793,13 @@ void free_argv(char **argv)
 	free(argv);
 }
 
+void free_struct(t_all *all, char **argv, char ***cmds)
+{
+	free(argv);
+	free(cmds);
+	free_cmd(all);
+}
+
 int		make_struct(t_all *all, char *str)
 {
 	char **argv;
@@ -816,18 +836,11 @@ int		make_struct(t_all *all, char *str)
 		cmds[i] = new_argv;
 		i++;
 	}
-	//execute
 	i = 0;
 	if (m_struct(all, cmds) < 0)
-		return (print_merror(all)); //ЪУЪ!
-
-
-
-	///
+		return (print_merror(all));
 	execute_cmd(all);
-	free(argv);
-	free (cmds);
-	free_cmd(all);
+	free_struct(all, argv, cmds);
 	return (0);
 }
 
@@ -857,7 +870,9 @@ char	*if_no_var(t_all *all, char *str, char *d_pointer, char *end)
 	char *tmp1;
 	char *tmp2;
 
-	if (!(tmp2 = get_env_val(all->envp, end)))
+	tmp2 = get_env_val(all->envp, end);
+
+	if (!tmp2)
 	{
 		tmp1 = ft_substr(str, 0, d_pointer - str);
 		if (!tmp1)
@@ -869,7 +884,7 @@ char	*if_no_var(t_all *all, char *str, char *d_pointer, char *end)
 			tmp1 = my_strjoin(tmp1, after_var(d_pointer + 1));
 		else
 		{
-			*d_pointer *= -1; // ТАК НАДО
+			*d_pointer *= -1;
 			tmp1 = my_strjoin(tmp1, d_pointer);
 		}
 		if (!tmp1)
@@ -888,8 +903,6 @@ int		make_cmd(t_all *all)
 	char **cmds;
 	int i;
 	char *d_pointer;
-	char *tmp1;
-	char *tmp2;
 	char *end;
 
 	i = 0;
@@ -912,14 +925,6 @@ int		make_cmd(t_all *all)
 	}
 	free(cmds);
 	return (0);
-}
-
-void	free_all(t_all *all)
-{
-	if (all->cmds)
-		free_cmd(all);
-	if (all->src->str)
-		free(all->src->str);
 }
 
 int		parser(t_all *all)
@@ -948,7 +953,6 @@ int		parser(t_all *all)
 	all->src = &src;
 	make_cmd(all);
 	free(src.str);
-	//free_all(all);
 	return (ret);
 }	
 
@@ -1003,28 +1007,18 @@ void	new_env(t_all *all)
 		new_env[i] = ft_strjoin(env->key, "=");
 		new_env[i] = my_strjoin(new_env[i], env->value);
 		tmp_list = tmp_list->next;
-		//free(all->env_strs[i]);
 		i++;
 	}
-	//free(all->env_strs);
 	all->env_strs = new_env;
 }
 
 void	shlvl_ini(t_all *all)
 {
 	char *shlvl;
-	char *logname;
 	int val;
 	t_list *tmp;
 	t_env *env;
 
-	// tmp = all->envp;
-	// while (tmp)
-	// {
-	// 	env = tmp->content;
-	// 	printf("%s\n", env->key);
-	// 	tmp = tmp->next;
-	// }
 	shlvl = NULL;
 	shlvl = get_env_val(all->envp, "SHLVL");
 	if (shlvl != NULL)
@@ -1043,11 +1037,54 @@ void	shlvl_ini(t_all *all)
 		val++;
 		add_key(all->envp, "SHLVL", ft_itoa(val));
 	}
-	logname = get_env_val(all->envp, "LOGNAME");
 	if (shlvl)
 		free(shlvl);
-	// if (logname != NULL)
-	// 	add_key(all->envp, "HOME", ft_strjoin("/Users/", logname));
+}
+
+void ctrl_d_term(t_all *all)
+{
+	canon(all);
+	save_history(all);
+	printf("exit\n");
+	exit(0);
+}
+
+int read_line(t_all *all, char *str)
+{
+	int len;
+
+	while (ft_strncmp(str, "\n", 2))
+	{
+		len = read(0, str, 1000);
+		str[len] = 0;
+		if (!ft_strncmp(str, "\e[A", 5))
+			up_arrow(all);
+		else if (!ft_strncmp(str, "\e[B", 5))
+			down_arrow(all);
+		else if (!ft_strncmp(str, "\177", 5))
+			backspace_key(all);
+		else if (!ft_strncmp(str, "\e[D", 5))
+			continue;
+		else if (!ft_strncmp(str, "\e[C", 5))
+			continue;
+		else if (!ft_strncmp(str, "\4", 2) && ft_strlen(all->history[all->pos]))
+			continue;
+		else if (!ft_strncmp(str, "\4", 2) && !ft_strlen(all->history[all->pos]))
+			ctrl_d_term(all);
+		else if (!ft_strncmp(str, "\03", 2))
+		{
+			canon(all);
+			write(1, "\n", 1);
+			break;
+		}
+		else
+		{
+			if (hist_strjoin(all, str) < 0)
+				return (-1);
+			write(1, str, len);
+		}
+	}
+	return (0);
 }
 
 int		main(int ac, char **av, char **envp)
@@ -1057,48 +1094,12 @@ int		main(int ac, char **av, char **envp)
 	char str[2000];
 
 	all = init_all(envp);
-	shlvl_ini(all);
-	//printf("!!!");
+	shlvl_ini(all);;
 	while(1) 
 	{
 		new_line(all, str);
 		nocanon(all);
-		while (ft_strncmp(str, "\n", 2))
-		{
-			len = read(0, str, 1000);
-			str[len] = 0;
-			if (!ft_strncmp(str, "\e[A", 5))
-				up_arrow(all);
-			else if (!ft_strncmp(str, "\e[B", 5))
-				down_arrow(all);
-			else if (!ft_strncmp(str, "\177", 5))
-				backspace_key(all);
-			else if (!ft_strncmp(str, "\e[D", 5))
-				continue ;
-			else if (!ft_strncmp(str, "\e[C", 5))
-				continue ;
-			else if (!ft_strncmp(str, "\4", 2) && ft_strlen(all->history[all->pos]))
-				continue;
-			else if (!ft_strncmp(str, "\4", 2) && !ft_strlen(all->history[all->pos]))
-			{
-				canon(all);
-				save_history(all);
-				printf("exit\n");
-				exit(0);
-			}
-			else if (!ft_strncmp(str, "\03", 2))
-			{
-				canon(all);
-				write(1, "\n", 1);
-				break ;
-			}
-			else
-			{
-				if (hist_strjoin(all, str) < 0)
-					return (-1);
-				write(1, str, len);
-			}
-		}
+		read_line(all, str);
 		if (!ft_strncmp(str, "\n", 2))
 		{
 			canon(all);
@@ -1109,17 +1110,3 @@ int		main(int ac, char **av, char **envp)
 	ft_putchar_fd('\n', 1);
 	return (0);
 }
-
-// int main(int ac, char **av, char **envp)
-// {
-// 	t_all *all;
-// 	char str[2000];
-
-// 	all = init_all(envp);
-// 	shlvl_ini(all);
-// 	new_line(all, str);
-// 	all->pos--;
-// 	all->hist_len--;
-// 	parser(all);
-// 	while(1);
-// }

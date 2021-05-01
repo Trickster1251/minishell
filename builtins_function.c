@@ -171,6 +171,7 @@ void	ft_export_arg(t_cmd * cmd, t_list *envp, t_list *exp)
 		//
 		//write(1, value,ft_strlen(value));
 		//
+		printf("1\n");
 		add_key(envp, key, value);
 		add_key(exp, key, value);
 	}
