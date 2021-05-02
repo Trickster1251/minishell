@@ -38,7 +38,7 @@ void shield_sym(t_all *all, t_line *src)
 		src->str[src->pos] *= -1;
 	else if (src->str[src->pos] == '|' && (all->val.in_qt == 1 || prev_char(src) == '\\' || all->val.in_dqt == 1))
 		src->str[src->pos] *= -1;
-	else if (src->str[src->pos] == '"' && (all->val.in_qt == 1 || prev_char(src) == '\\' || all->val.in_dqt == 1))
+	else if (src->str[src->pos] == '"' && (all->val.in_qt == 1 || prev_char(src) == '\\'))
 		src->str[src->pos] *= -1;
 	else if (src->str[src->pos] == '\\' && (all->val.in_qt == 1 || prev_char(src) == '\\' || all->val.in_dqt == 1))
 		src->str[src->pos] *= -1;
