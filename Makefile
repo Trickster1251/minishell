@@ -7,10 +7,23 @@ SRCS	=	./gnl/get_next_line.c\
 			./ft_echo.c \
 			./signals.c \
 			./redirect.c \
+			./history.c \
 			./ft_pwd.c \
 			ft_lists_utils.c \
 			./builtins_function.c \
 			./builtins_func_utils.c \
+			./init.c \
+			./key_events.c \
+			./read_line.c \
+			./parser.c \
+			./parser2.c \
+			./lexer.c \
+			./lexer2.c \
+			./tokenize.c \
+			./tokenize2.c \
+			./lexer3.c \
+			./parser_utils.c \
+			./history_print.c \
 				
 FLAGS	=	-Wall -Wextra -Werror
 LIBFT	=	 -L./libft -lft

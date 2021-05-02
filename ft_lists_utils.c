@@ -34,10 +34,6 @@ char    *search_key(t_list *lst, char *key)
             	result = ft_strdup(env->value);
 			else
 				return (ft_strdup(""));
-            // write(1,result,ft_strlen(result));
-            // write(1,"\n", 1);
-            // free(env->value);
-            // free(env->key);
             return(result);
         }
         tmp = tmp->next;
@@ -50,7 +46,6 @@ void    add_key(t_list *lst, char *key, char *value)
     t_env *env;
 	char *tmp;
 
-	printf("value: %s\n", value);
     env = ft_calloc(sizeof(t_env *), 2);
     env->key = key;
     env->value = value;

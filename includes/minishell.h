@@ -71,7 +71,7 @@ typedef struct s_all
 	//
 	t_list *exp;
 	t_cmd *cmds;
-	char **history;
+	char **hist;
 	int pos;
 	int hist_len;
 	t_list *hist_list;
@@ -103,6 +103,15 @@ void    ft_unset(t_cmd *cmd, t_list *envp, t_list *exp);
 void    ft_exit(t_cmd *cmd);
 void	ft_export_arg(t_cmd * cmd, t_list *envp, t_list *exp);
 
+// history
+int		read_history(t_all *all);
+int		save_history(t_all *all);
+int		hist_strjoin(t_all *all, char *str);
+int		get_hist_array(t_all *all);
+int		new_line(t_all *all, char *str);
+int 	read_line(t_all *all, char *str);
+void 	ctrl_d_term(t_all *all);
+
 //Сигналы
 void    ctrl_slash(int sig);
 void    ctrl_c(int sig);
@@ -116,7 +125,11 @@ int		is_redir_type(char *str);
 int     count_redir(char **arr);
 
 //Инициализация
-void	init_shlvl(t_list *envp, t_list *exp);
+void	shlvl_ini(t_all *all);
+void	new_env(t_all *all);
+void	free_struct(t_all *all, char **argv, char ***cmds);
+void	free_cmd(t_all *all);
+t_all 	*init_all(char **envp);
 
 //Мелкие полезные функции не забыть добавить в либу
 int		ft_isdigit_str(char *str);
@@ -147,4 +160,45 @@ char     *search_path(t_all *all, t_cmd *cmd, t_list *envp);
 int 	unshield(char *str);
 void	free_str_arr(char **arr);
 char 	*get_env_val(t_list *envp, char *key);
+
+//termcaps
+int		ft_putint(int c);
+void 	canon(t_all *all);
+void	nocanon(t_all *all);
+void 	up_arrow(t_all *all);
+void	down_arrow(t_all *all);
+void	backspace_key(t_all *all);
+void	print_previus(t_all *all);
+void	print_next(t_all *all);
+//parser
+int		print_merror(t_all *all);
+int		parser(t_all *all);
+int		make_cmd(t_all *all);
+char	*var_replace(t_all *all, char *str, char *d_pointer, char *end);
+int		shield(t_all *all, t_line *src);
+char 	*end_var(char *s);
+char	*if_no_var(t_all *all, char *str, char *d_pointer, char *end);
+int		make_struct(t_all *all, char *str);
+char 	*after_var(char *s);
+void	free_cmd(t_all *all);
+int		argv_len(char **argv);
+char**	tokenize(char *str, t_all *all);
+int		check_redir(char **argv);
+int		m_struct(t_all *all, char ***argv);
+int		check_argv(t_all *all, char **argv);
+void	check_quotes(t_all *all, t_line *src);
+void 	shield_sym(t_all *all, t_line *src);
+int 	is_right_syntax_pipes(t_line *src, t_all *all, int *k);
+int		is_right_redir_syntax(t_all *all, t_line *src, int *redir, int *rev_redir);
+int		is_right_revd_syntax(t_all *all, t_line *src, int *rev_redir, int *redir);
+char	prev_char(t_line *src);
+char**	tokenize(char *str, t_all *all);
+char	**arg_join(t_all *all, char **argv, char *str);
+char	**realoc_argv(char **src);
+char	*ft_charjoin(char const *s1, char c);
+int		print_merror(t_all *all);
+void	print_next(t_all *all);
+void	print_previus(t_all *all);
+int		remove_ch(t_line *src);
+
 #endif
