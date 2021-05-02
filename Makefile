@@ -4,9 +4,9 @@ SRCS	=	./gnl/get_next_line.c\
 			./gnl/get_next_line_utils.c\
 			./main.c \
 			./execute_cmd.c \
-			./ft_echo.c \
 			./signals.c \
 			./redirect.c \
+<<<<<<< HEAD
 			./history.c \
 			./ft_pwd.c \
 			ft_lists_utils.c \
@@ -24,6 +24,20 @@ SRCS	=	./gnl/get_next_line.c\
 			./lexer3.c \
 			./parser_utils.c \
 			./history_print.c \
+=======
+			./builtins_function/ft_cd.c \
+			./builtins_function/ft_pwd.c \
+			./builtins_function/ft_export.c \
+			./builtins_function/ft_env.c \
+			./builtins_function/ft_echo.c \
+			./builtins_function/ft_exit.c \
+			./builtins_function/ft_unset.c \
+			./ft_pipes.c \
+			./builtins_function/exec_builtins_func.c \
+			./lists_utils.c \
+			./lists_utils1.c \
+			./func_utils.c \
+>>>>>>> 9632c2bf8fb52eda68b65226d4f67b4f5c1596df
 				
 FLAGS	=	-Wall -Wextra -Werror
 LIBFT	=	 -L./libft -lft
