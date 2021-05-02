@@ -1,55 +1,50 @@
 #include "includes/minishell.h"
 
-int     who_more(char *str, char *str1)
+int	ft_isdigit_str(char *str)
 {
-    if (ft_strlen(str) >= ft_strlen(str1))
-        return (ft_strlen(str));
-    return (ft_strlen(str1));
+	int	i;
+
+	i = -1;
+	while (str[++i])
+		if (!ft_isdigit(str[i]))
+			return (0);
+	return (1);
 }
 
-int     ft_isdigit_str(char *str)
+int	len_arr(char **str)
 {
-    int     i;
+	int	i;
 
-    i = -1;
-    while(str[++i])
-        if (!ft_isdigit(str[i]))
-            return (0);
-    return(1);
+	i = 0;
+	while (str[i])
+		i++;
+	return (i);
 }
 
-int     len_arr(char **str)
+int	is_delim(char *line)
 {
-    int i;
+	int	i;
 
-    i = -1;
-    while(str[++i]);
-    return (i);
+	i = -1;
+	while (line[++i])
+	{
+		if (line[i] == '=')
+			return (i);
+	}
+	return (0);
 }
 
-int     is_min(int n, int m)
+void	print_arr(char **arr)
 {
-    if (n >= m)
-        return (m);
-    return (n);
-}
+	int	i;
+	int	j;
 
-int     is_max(int n, int m)
-{
-    if (n >= m)
-        return (n);
-    return (m);
-}
-
-int     is_delim(char *line)
-{
-    int     i;
-
-    i = -1;
-    while(line[++i])
-    {
-        if (line[i] == '=')
-            return (i);
-    }
-    return (0);
+	i = -1;
+	while (arr[++i])
+	{
+		j = -1;
+		while (arr[i][++j])
+			write(1, &arr[i][j], 1);
+		write(1, "\n", 1);
+	}
 }
