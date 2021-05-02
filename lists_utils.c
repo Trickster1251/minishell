@@ -41,7 +41,7 @@ char    *search_key(t_list *lst, char *key)
     return(NULL);
 }
 
-void    add_key(t_list *lst, char *key, char *value)
+void    add_key(t_list *lst, char *key, char *value, int f)
 {
     t_env *env;
 	char *tmp;
@@ -56,6 +56,8 @@ void    add_key(t_list *lst, char *key, char *value)
         set_value(lst, key, value);
 	if (tmp != NULL)
 	{
+		if (f == 1)
+			free(key);
 		free(tmp);
 		free(env);
 	}

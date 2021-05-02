@@ -13,17 +13,17 @@ void	shlvl_ini(t_all *all)
 	else
 		return ;
 	if (val < 0)
-		add_key(all->envp, "SHLVL", "0");
+		add_key(all->envp, "SHLVL", "0", 0);
 	else if (val >= 1000)
 	{
 		printf("minishell: warning: shell level (%d) too", val + 1);
 		printf(" high, resetting to 1\n");
-		add_key(all->envp, "SHLVL", "1");
+		add_key(all->envp, "SHLVL", "1", 0);
 	}
 	else
 	{	
 		val++;
-		add_key(all->envp, "SHLVL", ft_itoa(val));
+		add_key(all->envp, "SHLVL", ft_itoa(val), 0);
 	}
 	if (shlvl)
 		free(shlvl);

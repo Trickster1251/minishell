@@ -40,8 +40,7 @@ void	change_dir(t_cmd *cmd, t_list *lst, t_list *exp, char *tmp)
 		dir1 = ft_strdup(getcwd(dir, 1000));
 		printf("this is pwd:=%s\n", dir1);
 		search_and_destroy(lst, "PWD");
-		add_key(lst, "PWD", dir1);
-		add_key(exp, "PWD", dir1);
+		add_key(lst, "PWD", dir1, 0);
 	}
 }
 

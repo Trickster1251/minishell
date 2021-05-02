@@ -92,7 +92,7 @@ typedef struct s_all
 
 //Глобальная переменная
 int		gl_fd[4];
-
+void	search_and_destroy(t_list *lst, char *key);
 void     execute_cmd(t_all *all);
 void    ft_cd(t_cmd *cmd, t_list *lst, t_list *exp);
 void    ft_echo(t_cmd *cmd);
@@ -103,7 +103,6 @@ void    ft_unset(t_cmd *cmd, t_list *envp, t_list *exp);
 void    ft_exit(t_cmd *cmd);
 void	ft_export_arg(t_cmd * cmd, t_list *envp, t_list *exp);
 
-<<<<<<< HEAD
 // history
 int		read_history(t_all *all);
 int		save_history(t_all *all);
@@ -112,7 +111,6 @@ int		get_hist_array(t_all *all);
 int		new_line(t_all *all, char *str);
 int 	read_line(t_all *all, char *str);
 void 	ctrl_d_term(t_all *all);
-=======
 //
 
 int		is_valid_id(char *key);
@@ -123,7 +121,6 @@ void	exec_echo(t_all *a, pid_t *pid, int i, int **pfd);
 void	exec_env(t_all *a, pid_t *pid, int i, int **pfd);
 void	exec_export(t_all *a, pid_t *pid, int i, int **pfd);
 void	exec_pwd(t_all *a, pid_t *pid, int i, int **pfd);
->>>>>>> 9632c2bf8fb52eda68b65226d4f67b4f5c1596df
 
 //Сигналы
 void    ctrl_slash(int sig);
@@ -167,7 +164,7 @@ t_list	*sorting(t_list *lst);
 int     set_value(t_list *lst, char *key, char *new_val);
 char    **lst_to_array(t_list *lst);
 char    **lst_to_argv(t_list *lst);
-void    add_key(t_list *lst, char *key, char *value);
+void    add_key(t_list *lst, char *key, char *value, int f);
 void	del_key(t_list **lst, char *key);
 char     *search_path(t_all *all, t_cmd *cmd, t_list *envp);
 int 	unshield(char *str);

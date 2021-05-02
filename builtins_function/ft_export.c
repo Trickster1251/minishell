@@ -63,8 +63,10 @@ void	ft_export_arg(t_cmd *cmd, t_list *envp, t_list *exp)
 				if (value == NULL)
 					value = ft_strdup("");
 				value = my_strjoin(value, tmp);
-				add_key(envp, key, value);
-				add_key(exp, key, value);
+				search_and_destroy(envp, key);
+				add_key(envp, key, value, 1);
+				free(tmp);
+				tmp = NULL;
 				continue;
 			}
 			else
@@ -83,7 +85,7 @@ void	ft_export_arg(t_cmd *cmd, t_list *envp, t_list *exp)
 					++first_space, ft_strlen(cmd->argv[i]));
 		else
 			value = NULL;
-		add_key(envp, key, value);
-		add_key(exp, key, value);
+		search_and_destroy(envp, key);
+		add_key(envp, key, value, 1);
 	}
 }

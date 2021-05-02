@@ -1,17 +1,12 @@
 NAME = minishell
 INCLUDES =  includes/minishell.h
-SRCS	=	./gnl/get_next_line.c\
-			./gnl/get_next_line_utils.c\
+SRCS	=	./gnl/get_next_line.c \
+			./gnl/get_next_line_utils.c \
 			./main.c \
 			./execute_cmd.c \
 			./signals.c \
 			./redirect.c \
-<<<<<<< HEAD
 			./history.c \
-			./ft_pwd.c \
-			ft_lists_utils.c \
-			./builtins_function.c \
-			./builtins_func_utils.c \
 			./init.c \
 			./key_events.c \
 			./read_line.c \
@@ -24,7 +19,6 @@ SRCS	=	./gnl/get_next_line.c\
 			./lexer3.c \
 			./parser_utils.c \
 			./history_print.c \
-=======
 			./builtins_function/ft_cd.c \
 			./builtins_function/ft_pwd.c \
 			./builtins_function/ft_export.c \
@@ -37,7 +31,6 @@ SRCS	=	./gnl/get_next_line.c\
 			./lists_utils.c \
 			./lists_utils1.c \
 			./func_utils.c \
->>>>>>> 9632c2bf8fb52eda68b65226d4f67b4f5c1596df
 				
 FLAGS	=	-Wall -Wextra -Werror
 LIBFT	=	 -L./libft -lft
