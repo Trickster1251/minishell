@@ -113,6 +113,10 @@ int 	read_line(t_all *all, char *str);
 void 	ctrl_d_term(t_all *all);
 //
 
+
+char	*absolute_path(t_cmd *cmd);
+char	*is_binary(int i, t_cmd *cmd, char **path);
+
 int		is_valid_id(char *key);
 
 int	is_builtin(t_all *a, int i, pid_t *pid, int **pfd);
@@ -154,7 +158,6 @@ int     is_min(int n, int m);
 t_list *parse_env(char **envp);
 char	**ft_sort(char **env, int size);
 //Печать env export
-void    print_lst(t_list *lst);
 void    print_env(t_list *lst);
 void    print_export(t_list **lst);
 

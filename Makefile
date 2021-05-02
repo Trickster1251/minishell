@@ -6,6 +6,7 @@ SRCS	=	./gnl/get_next_line.c \
 			./execute_cmd.c \
 			./signals.c \
 			./redirect.c \
+			./exec_utils.c \
 			./parser/history.c \
 			./parser/init.c \
 			./parser/key_events.c \

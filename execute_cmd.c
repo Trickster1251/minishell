@@ -1,64 +1,35 @@
 #include "includes/minishell.h"
 
-char	*absolute_path(t_cmd *cmd)
+char	*search_path(t_all *all, t_cmd *cmd, t_list *envp)
 {
-	int	fd;
+	int			i;
+	struct stat	buf;
+	char		**env;
+	char		**path;
+	char		*tmp;
 
-	fd = open(cmd->argv[0], O_RDONLY);
-	if (fd)
-	{
-		if (ft_strncmp("./", cmd->argv[0], 2))
-		{
-			printf("minishell: %s: command not found\n", cmd->argv[0]);
-			gl_fd[0] = 127;
-			return (NULL);
-		}
-	}
-	return (cmd->argv[0]);
-}
-
-char     *search_path(t_all *all, t_cmd *cmd, t_list *envp)
-{
-    int     i;
-    struct stat buf;
-    char    **env;
-    char    **path;
-    char    *comd;
-	char *tmp;
-
-	tmp = NULL;
 	tmp = search_key(envp, "PATH");
-    path = ft_split(tmp, ':');
+	path = ft_split(tmp, ':');
 	if (tmp)
 		free(tmp);
 	if (!path)
-		path = ft_calloc(1, sizeof(char*));
-    comd = ft_strjoin("/", cmd->argv[0]);
-    i = -1;
-    gl_fd[0] = 0;
-    while(path[++i] && cmd->fd[0] != -1 && cmd->fd[1] != -1)
-    {
-		tmp = ft_strjoin(path[i], comd);
-        if (lstat(tmp, &buf) == 0)
-        {
-			free(tmp);
-            tmp = ft_strjoin(path[i], comd);
-			free_str_arr(path);
-			free(comd);
-            return (tmp);
-        }
-		free(tmp);
-    }
+		path = ft_calloc(1, sizeof(char *));
+	i = -1;
+	while (path[++i] && cmd->fd[0] != -1 && cmd->fd[1] != -1)
+	{
+		tmp = is_binary(i, cmd, path);
+		if (tmp != NULL)
+			return (tmp);
+	}
 	free_str_arr(path);
-	free(comd);
 	if (lstat(cmd->argv[0], &buf) == 0)
 		cmd->argv[0] = absolute_path(cmd);
-    printf("minishell: %s: command not found\n", cmd->argv[0]);
-    gl_fd[0] = 127;
-    return (NULL);
+	printf("minishell: %s: command not found\n", cmd->argv[0]);
+	gl_fd[0] = 127;
+	return (NULL);
 }
 
-void    init_values(t_all *a, int i)
+void	init_values(t_all *a, int i)
 {
 	int	j;
 
@@ -99,7 +70,7 @@ void	wait_pid(t_all *a, pid_t *pid)
 {
 	int	f;
 	int	i;
-	int status;
+	int	status;
 
 	i = -1;
 	while (++i < a->cmds_num)
@@ -113,9 +84,10 @@ void	wait_pid(t_all *a, pid_t *pid)
 
 void	execute_cmd(t_all *a)
 {
-	int	i;
-	int	**pfd;
+	int		i;
+	int		**pfd;
 	pid_t	*pid;
+	int		com;
 
 	i = -1;
 	pfd = 0;
@@ -126,13 +98,13 @@ void	execute_cmd(t_all *a)
 	while (++i < a->cmds_num)
 	{
 		init_values(a, i);
-		if (is_builtin(a, i, pid, pfd));
-		else
+		com = is_builtin(a, i, pid, pfd);
+		if (!com)
 			exec_command(a, i, pid, pfd);
 		signal(SIGINT, ctrl_c);
 		signal(SIGQUIT, ctrl_slash);
 	}
 	wait_pid(a, pid);
-    free(pid);
-    printf("code : %d\n", gl_fd[0]);
+	free(pid);
+	printf("code : %d\n", gl_fd[0]);
 }
