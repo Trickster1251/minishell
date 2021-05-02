@@ -6,19 +6,19 @@ SRCS	=	./gnl/get_next_line.c \
 			./execute_cmd.c \
 			./signals.c \
 			./redirect.c \
-			./history.c \
-			./init.c \
-			./key_events.c \
-			./read_line.c \
-			./parser.c \
-			./parser2.c \
-			./lexer.c \
-			./lexer2.c \
-			./tokenize.c \
-			./tokenize2.c \
-			./lexer3.c \
-			./parser_utils.c \
-			./history_print.c \
+			./parser/history.c \
+			./parser/init.c \
+			./parser/key_events.c \
+			./parser/read_line.c \
+			./parser/parser.c \
+			./parser/parser2.c \
+			./parser/lexer.c \
+			./parser/lexer2.c \
+			./parser/tokenize.c \
+			./parser/tokenize2.c \
+			./parser/lexer3.c \
+			./parser/parser_utils.c \
+			./parser/history_print.c \
 			./builtins_function/ft_cd.c \
 			./builtins_function/ft_pwd.c \
 			./builtins_function/ft_export.c \
