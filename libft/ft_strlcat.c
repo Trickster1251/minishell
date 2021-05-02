@@ -14,7 +14,7 @@
 
 static size_t	ft_strlen(const char *src)
 {
-	size_t i;
+	size_t	i;
 
 	i = 0;
 	while (*src)
@@ -25,7 +25,7 @@ static size_t	ft_strlen(const char *src)
 	return (i);
 }
 
-size_t			ft_strlcat(char *dst, const char *src, size_t dstsize)
+size_t	ft_strlcat(char *dst, const char *src, size_t dstsize)
 {
 	size_t			i;
 	size_t			k;

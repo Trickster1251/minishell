@@ -14,8 +14,8 @@
 
 static int	words_count(char const *s, char c)
 {
-	int words_num;
-	int k;
+	int	words_num;
+	int	k;
 
 	words_num = 0;
 	k = 0;
@@ -43,7 +43,7 @@ static char	*my_strdup(const char *s1, char c)
 	i = 0;
 	while (s1[len] != c && s1[len])
 		len++;
-	s2 = (char*)malloc((len + 1) * sizeof(char));
+	s2 = (char *)malloc((len + 1) * sizeof(char));
 	if (s2 == NULL)
 		return (NULL);
 	while (s1[i] && s1[i] != c)
@@ -57,7 +57,7 @@ static char	*my_strdup(const char *s1, char c)
 
 static char	**w_free(char **words, int n)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (i < n)
@@ -71,7 +71,7 @@ static char	**w_free(char **words, int n)
 
 static char	**w_malloc(const char *s, char c, char **words)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (*s)
@@ -92,7 +92,7 @@ static char	**w_malloc(const char *s, char c, char **words)
 	return (words);
 }
 
-char		**ft_split(char const *s, char c)
+char	**ft_split(char const *s, char c)
 {
 	char	**words;
 	int		w_num;
@@ -100,7 +100,7 @@ char		**ft_split(char const *s, char c)
 	if (!s)
 		return (NULL);
 	w_num = words_count(s, c);
-	words = (char**)malloc((w_num + 1) * sizeof(char*));
+	words = (char **)malloc((w_num + 1) * sizeof(char *));
 	if (words == NULL)
 		return (NULL);
 	words = w_malloc(s, c, words);

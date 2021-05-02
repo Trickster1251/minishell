@@ -53,7 +53,7 @@ void	exec_export(t_all *a, pid_t *pid, int i, int **pfd)
 		}
 	}
 	else
-		ft_export_arg(a->cmds, a->envp, a->exp);
+		ft_export_arg(a->cmds, a);
 }
 
 int	is_builtin(t_all *a, int i, pid_t *pid, int **pfd)

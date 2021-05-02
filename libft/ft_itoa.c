@@ -14,8 +14,8 @@
 
 static int	diglen(int n)
 {
-	int l;
-	int n1;
+	int	l;
+	int	n1;
 
 	l = 0;
 	n1 = n;
@@ -36,7 +36,7 @@ static int	is_negative(int n)
 	return (0);
 }
 
-char		*ft_itoa(int n)
+char	*ft_itoa(int n)
 {
 	int			len;
 	long long	n1;
@@ -48,7 +48,7 @@ char		*ft_itoa(int n)
 	len = diglen(n) + is_negative(n);
 	if (n < 0)
 		n1 *= -1;
-	a = (char*)malloc((len + 1) * sizeof(char));
+	a = (char *)malloc((len + 1) * sizeof(char));
 	if (a == NULL)
 		return (NULL);
 	if (n1 == 0)

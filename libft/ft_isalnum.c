@@ -24,7 +24,7 @@ static int	isal(int a)
 	return (0);
 }
 
-int			ft_isalnum(int c)
+int	ft_isalnum(int c)
 {
 	if (isal(c) == 0 && isn(c) == 0)
 		return (0);

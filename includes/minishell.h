@@ -101,7 +101,7 @@ void    ft_env(t_cmd *cmd, t_list *envp);
 void    ft_export(t_cmd *cmd, t_list *envp, t_list *exp);
 void    ft_unset(t_cmd *cmd, t_list *envp, t_list *exp);
 void    ft_exit(t_cmd *cmd);
-void	ft_export_arg(t_cmd * cmd, t_list *envp, t_list *exp);
+void	ft_export_arg(t_cmd * cmd, t_all *a);
 
 // history
 int		read_history(t_all *all);

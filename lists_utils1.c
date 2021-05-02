@@ -10,11 +10,11 @@ void	free_str_arr(char **arr)
 	free(arr);
 }
 
-t_list	*parse_env(char **env)
+t_list *parse_env(char **env)
 {
-	t_list	*lst;
-	t_env	*tmp;
-	char	*tmp_str;
+	t_list *lst;
+	t_env *tmp;
+	char *tmp_str;
 
 	lst = NULL;
 	while (*env)
@@ -33,12 +33,12 @@ t_list	*parse_env(char **env)
 				if (ft_strncmp(tmp->key, "OLDPWD", 7))
 					ft_lstadd_back(&lst, ft_lstnew(tmp));
 				else
-				{
-					free(tmp->key);
-					free(tmp->value);
-					free(tmp);
-				}
-				break ;
+					{
+						free(tmp->key);
+						free(tmp->value);
+						free(tmp);
+					}
+				break;
 			}
 			tmp_str++;
 		}
@@ -46,6 +46,135 @@ t_list	*parse_env(char **env)
 	}
 	return (lst);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// int	parse_item(char *tmp_str, char **env, t_list *lst)
+// {
+// 	t_env *tmp;
+// 	while (*tmp_str)
+// 	{
+// 		if (*tmp_str == '=')
+// 		{
+// 			tmp = (t_env *)malloc(sizeof(t_env));
+// 			if (!tmp)
+// 				return (0);
+// 			tmp->key = ft_substr(*env, 0, tmp_str - *env);
+// 			if (tmp->key != NULL)
+// 				tmp->value = ft_strdup(tmp_str + 1);
+// 			if (ft_strncmp(tmp->key, "OLDPWD", 7))
+// 				ft_lstadd_back(&lst, ft_lstnew(tmp));
+// 			else
+// 			{
+// 				free(tmp->key);
+// 				free(tmp->value);
+// 				free(tmp);
+// 			}
+// 			break;
+// 		}
+// 		tmp_str++;
+// 	}
+// 	return (1);
+// }
+
+// t_list	*parse_env(char **env)
+// {
+// 	t_env *tmp;
+// 	t_list *lst;
+// 	char *tmp_str;
+
+// 	lst = NULL;
+// 	while (*env)
+// 	{
+// 		tmp_str = *env;
+// 		if ((parse_item(tmp_str, env, lst) == 0))
+// 			return (NULL);
+// 		{
+// 			if (*tmp_str == '=')
+// 			{
+// 				tmp = (t_env*)malloc(sizeof(t_env));
+// 				if (!tmp)
+// 					return (NULL);
+// 				tmp->key = ft_substr(*env, 0, tmp_str - *env);
+// 				if (tmp->key != NULL)
+// 					tmp->value = ft_strdup(tmp_str + 1);
+// 				if (ft_strncmp(tmp->key, "OLDPWD", 7))
+// 					ft_lstadd_back(&lst, ft_lstnew(tmp));
+// 				else
+// 					{
+// 						free(tmp->key);
+// 						free(tmp->value);
+// 						free(tmp);
+// 					}
+// 				break;
+// 			}
+// 			tmp_str++;
+// 		}
+// 		env++;
+// 	}
+// 	return (lst);
+// }
+
+
+
+
+
+// int	parse_item(t_env *tmp, char **env, t_list *lst)
+// {
+// 	char *tmp_str;
+
+// 	tmp_str = *env;
+// 	while (*tmp_str)
+// 	{
+// 		if (*tmp_str == '=')
+// 		{
+// 			tmp = (t_env *)malloc(sizeof(t_env));
+// 			if (!tmp)
+// 				return (0);
+// 			tmp->key = ft_substr(*env, 0, tmp_str - *env);
+// 			if (tmp->key != NULL)
+// 				tmp->value = ft_strdup(tmp_str + 1);
+// 			if (ft_strncmp(tmp->key, "OLDPWD", 7))
+// 				ft_lstadd_back(&lst, ft_lstnew(tmp));
+// 			else
+// 			{
+// 				free(tmp->key);
+// 				free(tmp->value);
+// 				free(tmp);
+// 			}
+// 		}
+// 		tmp_str++;
+// 	}
+// 	return (1);
+// }
+
+// t_list *parse_env(char **env)
+// {
+// 	t_list *lst;
+// 	t_env *tmp;
+
+
+// 	lst = NULL;
+// 	while (*env)
+// 	{
+// 		if(!parse_item(tmp, env, lst))
+// 			return (NULL);
+// 		env++;
+// 	}
+// 	return (lst);
+// }
 
 void	delete_item(t_list *tmp, char *key, t_env *env)
 {
