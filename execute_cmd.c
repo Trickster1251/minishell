@@ -1,19 +1,21 @@
 #include "includes/minishell.h"
 
-// void    print_arr(char **arr)
-// {
-//     int     i;
-//     int     j;
+char	*absolute_path(t_cmd *cmd)
+{
+	int	fd;
 
-//     i = -1;
-//     while(arr[++i])
-//     {
-//         j = -1;
-//         while(arr[i][++j])
-//             write(1,&arr[i][j],1);
-//         write(1,"\n",1);
-//     }
-// }
+	fd = open(cmd->argv[0], O_RDONLY);
+	if (fd)
+	{
+		if (ft_strncmp("./", cmd->argv[0], 2))
+		{
+			printf("minishell: %s: command not found\n", cmd->argv[0]);
+			gl_fd[0] = 127;
+			return (NULL);
+		}
+	}
+	return (cmd->argv[0]);
+}
 
 char     *search_path(t_all *all, t_cmd *cmd, t_list *envp)
 {
@@ -34,9 +36,6 @@ char     *search_path(t_all *all, t_cmd *cmd, t_list *envp)
     comd = ft_strjoin("/", cmd->argv[0]);
     i = -1;
     gl_fd[0] = 0;
-
-    int     fd;
-
     while(path[++i] && cmd->fd[0] != -1 && cmd->fd[1] != -1)
     {
 		tmp = ft_strjoin(path[i], comd);
@@ -52,20 +51,8 @@ char     *search_path(t_all *all, t_cmd *cmd, t_list *envp)
     }
 	free_str_arr(path);
 	free(comd);
-    if (lstat(cmd->argv[0], &buf) == 0)
-    {
-        fd = open(cmd->argv[0], O_RDONLY);
-        if (fd)
-        {
-            if (ft_strncmp("./", cmd->argv[0], 2))
-            {
-                printf("minishell: %s: command not found\n", cmd->argv[0]);
-                gl_fd[0] = 127;
-                return (NULL);
-            }
-        }
-        return (cmd->argv[0]);
-    }
+	if (lstat(cmd->argv[0], &buf) == 0)
+		cmd->argv[0] = absolute_path(cmd);
     printf("minishell: %s: command not found\n", cmd->argv[0]);
     gl_fd[0] = 127;
     return (NULL);
