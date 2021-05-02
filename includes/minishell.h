@@ -115,6 +115,8 @@ void 	ctrl_d_term(t_all *all);
 
 int		is_valid_id(char *key);
 
+int	is_builtin(t_all *a, int i, pid_t *pid, int **pfd);
+
 int    **pipes_fd(t_all *a);
 void    forking(pid_t *pid, int i, int ***fd, t_all *a);
 void	exec_echo(t_all *a, pid_t *pid, int i, int **pfd);

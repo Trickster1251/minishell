@@ -15,18 +15,6 @@ void    print_arr(char **arr)
     }
 }
 
-void	free_str_arr(char **arr)
-{
-	int i;
-
-	i = 0;
-	while(arr[i])
-	{
-		free(arr[i]);
-		i++;
-	}
-	free(arr);
-}
 
 char     *search_path(t_all *all, t_cmd *cmd, t_list *envp)
 {
