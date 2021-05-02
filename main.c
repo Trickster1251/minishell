@@ -23,3 +23,16 @@ int	main(int ac, char **av, char **envp)
 	ft_putchar_fd('\n', 1);
 	return (0);
 }
+
+// int main(int ac, char **av, char **envp)
+//  {
+//  	t_all *all;
+//  	char str[2000];
+//  	all = init_all(envp);
+//  	shlvl_ini(all);
+//  	new_line(all, str);
+//  	all->pos--;
+//  	all->hist_len--;
+//  	parser(all);
+//  	while(1);
+//  }
