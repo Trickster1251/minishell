@@ -107,7 +107,7 @@ void    ft_env(t_cmd *cmd, t_list *envp);
 void    ft_export(t_cmd *cmd, t_list *envp, t_list *exp);
 void    ft_unset(t_cmd *cmd, t_list *envp, t_list *exp);
 void    ft_exit(t_cmd *cmd);
-void	ft_export_arg(t_cmd * cmd, t_list *envp, t_list *exp);
+void	ft_export_arg(t_cmd * cmd, t_all *a);
 
 // history
 int		read_history(t_all *all);
@@ -119,7 +119,13 @@ int 	read_line(t_all *all, char *str);
 void 	ctrl_d_term(t_all *all);
 //
 
+
+char	*absolute_path(t_cmd *cmd);
+char	*is_binary(int i, t_cmd *cmd, char **path);
+
 int		is_valid_id(char *key);
+
+int	is_builtin(t_all *a, int i, pid_t *pid, int **pfd);
 
 int    **pipes_fd(t_all *a);
 void    forking(pid_t *pid, int i, int ***fd, t_all *a);
@@ -158,7 +164,6 @@ int     is_min(int n, int m);
 t_list *parse_env(char **envp);
 char	**ft_sort(char **env, int size);
 //Печать env export
-void    print_lst(t_list *lst);
 void    print_env(t_list *lst);
 void    print_export(t_list **lst);
 

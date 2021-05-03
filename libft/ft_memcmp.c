@@ -12,14 +12,14 @@
 
 #include <unistd.h>
 
-int		ft_memcmp(const void *s1, const void *s2, size_t n)
+int	ft_memcmp(const void *s1, const void *s2, size_t n)
 {
 	unsigned char	*s1n;
 	unsigned char	*s2n;
 	size_t			i;
 
-	s1n = (unsigned char*)s1;
-	s2n = (unsigned char*)s2;
+	s1n = (unsigned char *)s1;
+	s2n = (unsigned char *)s2;
 	i = 0;
 	while (i < n)
 	{

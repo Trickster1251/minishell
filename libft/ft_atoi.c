@@ -13,12 +13,12 @@
 static int	ft_isspace(const char *str)
 {
 	if (*str == ' ' || *str == '\t' || *str == '\r'
-			|| *str == '\n' || *str == '\v' || *str == '\f')
+		|| *str == '\n' || *str == '\v' || *str == '\f')
 		return (1);
 	return (0);
 }
 
-int			ft_atoi(const char *str)
+int	ft_atoi(const char *str)
 {
 	long long	i;
 	int			k;

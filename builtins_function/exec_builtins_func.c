@@ -53,5 +53,26 @@ void	exec_export(t_all *a, pid_t *pid, int i, int **pfd)
 		}
 	}
 	else
-		ft_export_arg(a->cmds, a->envp, a->exp);
+		ft_export_arg(a->cmds, a);
+}
+
+int	is_builtin(t_all *a, int i, pid_t *pid, int **pfd)
+{
+	if (strncmp(a->cmds[i].argv[0], "cd\0", 3) == 0)
+		ft_cd(&a->cmds[i], a->envp, a->exp);
+	else if (strncmp(a->cmds[i].argv[0], "echo\0", 5) == 0)
+		exec_echo(a, pid, i, pfd);
+	else if (strncmp(a->cmds[i].argv[0], "pwd\0", 4) == 0)
+		exec_pwd(a, pid, i, pfd);
+	else if (strncmp(a->cmds[i].argv[0], "env\0", 4) == 0)
+		exec_env(a, pid, i, pfd);
+	else if (strncmp(a->cmds[i].argv[0], "export\0", 7) == 0)
+		exec_export(a, pid, i, pfd);
+	else if (strncmp(a->cmds[i].argv[0], "unset\0", 6) == 0)
+		ft_unset(a->cmds, a->envp, a->exp);
+	else if (strncmp(a->cmds[i].argv[0], "exit\0", 6) == 0)
+		ft_exit(a->cmds);
+	else
+		return (0);
+	return (1);
 }

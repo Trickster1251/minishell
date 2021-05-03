@@ -14,7 +14,7 @@
 
 static int	ft_strlen(char const *s)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (s[i])
@@ -22,7 +22,7 @@ static int	ft_strlen(char const *s)
 	return (i);
 }
 
-char		*ft_substr(char const *s, unsigned int start, size_t len)
+char	*ft_substr(char const *s, unsigned int start, size_t len)
 {
 	char	*s1;
 	size_t	i;
@@ -30,7 +30,7 @@ char		*ft_substr(char const *s, unsigned int start, size_t len)
 
 	if (!s)
 		return (NULL);
-	s1 = (char*)malloc((len + 1) * sizeof(char));
+	s1 = (char *)malloc((len + 1) * sizeof(char));
 	if (s1 == NULL)
 		return (NULL);
 	if (ft_strlen(s) < (int)start)

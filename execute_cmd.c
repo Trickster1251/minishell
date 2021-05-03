@@ -1,103 +1,37 @@
 #include "includes/minishell.h"
 
-void    print_arr(char **arr)
+char	*search_path(t_all *all, t_cmd *cmd, t_list *envp)
 {
-    int     i;
-    int     j;
+	int			i;
+	struct stat	buf;
+	char		**env;
+	char		**path;
+	char		*tmp;
 
-    i = -1;
-    while(arr[++i])
-    {
-        j = -1;
-        while(arr[i][++j])
-            write(1,&arr[i][j],1);
-        write(1,"\n",1);
-    }
-}
-
-void	free_str_arr(char **arr)
-{
-	int i;
-
-	i = 0;
-	while(arr[i])
-	{
-		free(arr[i]);
-		i++;
-	}
-	free(arr);
-}
-
-char     *search_path(t_all *all, t_cmd *cmd, t_list *envp)
-{
-    int     i;
-    struct stat buf;
-    char    **env;
-    char    **path;
-    char    *comd;
-	char *tmp;
-
-	tmp = NULL;
 	tmp = search_key(envp, "PATH");
-    path = ft_split(tmp, ':');
+	path = ft_split(tmp, ':');
 	if (tmp)
 		free(tmp);
 	if (!path)
-		path = ft_calloc(1, sizeof(char*));
-    comd = ft_strjoin("/", cmd->argv[0]);
-    i = -1;
-    gl_fd[0] = 0;
-
-    int     fd;
-
-    while(path[++i] && cmd->fd[0] != -1 && cmd->fd[1] != -1)
-    {
-		tmp = ft_strjoin(path[i], comd);
-        if (lstat(tmp, &buf) == 0)
-        {
-			free(tmp);
-            tmp = ft_strjoin(path[i], comd);
-			free_str_arr(path);
-			free(comd);
-            return (tmp);
-        }
-		free(tmp);
-    }
+		path = ft_calloc(1, sizeof(char *));
+	i = -1;
+	while (path[++i] && cmd->fd[0] != -1 && cmd->fd[1] != -1)
+	{
+		tmp = is_binary(i, cmd, path);
+		if (tmp != NULL)
+			return (tmp);
+	}
 	free_str_arr(path);
-	free(comd);
-    if (lstat(cmd->argv[0], &buf) == 0)
-    {
-        fd = open(cmd->argv[0], O_RDONLY);
-        if (fd)
-        {
-            if (ft_strncmp("./", cmd->argv[0], 2))
-            {
-                printf("minishell: %s: command not found\n", cmd->argv[0]);
-                gl_fd[0] = 127;
-                return (NULL);
-            }
-        }
-        return (cmd->argv[0]);
-    }
-    printf("minishell: %s: command not found\n", cmd->argv[0]);
-    gl_fd[0] = 127;
-    return (NULL);
+	if (lstat(cmd->argv[0], &buf) == 0)
+		cmd->argv[0] = absolute_path(cmd);
+	printf("minishell: %s: command not found\n", cmd->argv[0]);
+	gl_fd[0] = 127;
+	return (NULL);
 }
 
-void    exec_command(t_all *all, t_cmd *cmd, t_list *envp, char *path)
+void	init_values(t_all *a, int i)
 {
-    char        **env = lst_to_array(envp);
-    struct stat buf;
-	int i;
-	
-	i = 0;
-    if (lstat(path, &buf) == 0)
-        execve(path, cmd->argv, env);
-}
-
-void    init_values(t_all *a, int i)
-{
-	int     j;
+	int	j;
 
 	j = -1;
 	a->cmds[i].fd[0] = 0;
@@ -110,70 +44,67 @@ void    init_values(t_all *a, int i)
 		unshield(a->cmds[i].argv[j]);
 }
 
-// Не трогать, работает
-void     execute_cmd(t_all *a)
+void	exec_command(t_all *a, int i, pid_t *pid, int **pfd)
 {
-    int     i;
-    int     **pfd;
-	int     f;
-    pid_t   pid[a->cmds_num];
-	int     status[a->cmds_num];
-	char *path;
+	char	*path;
+	char	**env;
 
-	int j;
-    i = -1;
-    pfd = 0;
-    a->exp = a->envp;
-    if (a->cmds_num > 1)
-        pfd = pipes_fd(a);
-    while(++i < a->cmds_num)
-    {
-        init_values(a, i);    
-
-        if (strncmp(a->cmds[i].argv[0], "cd\0", 3) == 0)
-            ft_cd (&a->cmds[i], a->envp, a->exp);
-        else if (strncmp(a->cmds[i].argv[0], "echo\0", 5) == 0)
-            exec_echo(a, pid, i, pfd);
-        else if (strncmp(a->cmds[i].argv[0], "pwd\0", 4) == 0)
-            exec_pwd(a, pid, i, pfd);
-        else if (strncmp(a->cmds[i].argv[0], "env\0", 4) == 0)
-            exec_env(a, pid, i, pfd);
-        else if (strncmp(a->cmds[i].argv[0], "export\0", 7) == 0)
-            exec_export(a, pid, i, pfd);
-		else if (strncmp(a->cmds[i].argv[0], "unset\0", 6) == 0)
-			ft_unset(a->cmds, a->envp, a->exp);
-		else if (strncmp(a->cmds[i].argv[0], "exit\0", 6) == 0)
-			ft_exit(a->cmds);
+	path = search_path(a, &a->cmds[i], a->envp);
+	pid[i] = fork();
+	forking(pid, i, &pfd, a);
+	if (pid[i] == 0)
+	{
+		if (path == NULL)
+			exit(127);
 		else
 		{
-			path = search_path(a, &a->cmds[i], a->envp);
-			pid[i] = fork();
-            forking(pid, i, &pfd, a);
-            if (pid[i] == 0)
-            {
-				if (path == NULL )
-					exit(127);
-				else
-				{
-                    char    **env = lst_to_array(a->envp);
-                    execve(path, a->cmds[i].argv, env);
-				}
-            }
-			if (path && ft_strncmp(a->cmds[i].argv[0], "./minishell\0", 12))
-                free(path);
-			signal(SIGINT, ctrl_c);
-			signal(SIGQUIT, ctrl_slash);
+			env = lst_to_array(a->envp);
+			execve(path, a->cmds[i].argv, env);
 		}
 	}
-	j = -1;
-	while (++j < a->cmds_num)
+	if (path && ft_strncmp(a->cmds[i].argv[0], "./minishell\0", 12))
+		free(path);
+}
+
+void	wait_pid(t_all *a, pid_t *pid)
+{
+	int	f;
+	int	i;
+	int	status;
+
+	i = -1;
+	while (++i < a->cmds_num)
 	{
-		waitpid(pid[j], &status[j], 0);
-		f = WSTOPSIG(status[j]);
+		waitpid(pid[i], &status, 0);
+		f = WSTOPSIG(status);
 		if (gl_fd[0] == 0 && f != 0)
-		{
-			gl_fd[0] = errno;
-		}
+			gl_fd[0] = 2;
 	}
+}
+
+void	execute_cmd(t_all *a)
+{
+	int		i;
+	int		**pfd;
+	pid_t	*pid;
+	int		com;
+
+	i = -1;
+	pfd = 0;
+	pid = calloc(sizeof(pid_t), a->cmds_num);
+	a->exp = a->envp;
+	if (a->cmds_num > 1)
+		pfd = pipes_fd(a);
+	while (++i < a->cmds_num)
+	{
+		init_values(a, i);
+		com = is_builtin(a, i, pid, pfd);
+		if (!com)
+			exec_command(a, i, pid, pfd);
+		signal(SIGINT, ctrl_c);
+		signal(SIGQUIT, ctrl_slash);
+	}
+	wait_pid(a, pid);
+	free(pid);
 	printf("code : %d\n", gl_fd[0]);
 }

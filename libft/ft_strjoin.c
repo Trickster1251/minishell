@@ -14,7 +14,7 @@
 
 static int	my_strlen(const char *s)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (s[i])
@@ -22,7 +22,7 @@ static int	my_strlen(const char *s)
 	return (i);
 }
 
-char		*ft_strjoin(char const *s1, char const *s2)
+char	*ft_strjoin(char const *s1, char const *s2)
 {
 	int		len;
 	int		i;
@@ -31,7 +31,7 @@ char		*ft_strjoin(char const *s1, char const *s2)
 	if (!s1 || !s2)
 		return (NULL);
 	len = my_strlen(s1) + my_strlen(s2);
-	a = (char*)malloc((len + 1) * sizeof(char));
+	a = (char *)malloc((len + 1) * sizeof(char));
 	i = 0;
 	if (a == NULL)
 		return (NULL);
