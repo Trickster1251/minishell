@@ -82,6 +82,21 @@ void	wait_pid(t_all *a, pid_t *pid)
 	}
 }
 
+void	free_pfd(t_all *a, pid_t ***p)
+{
+	pid_t	**pfd;
+	int		i;
+
+	i = -1;
+	pfd = *p;
+	if (pfd != 0)
+	{
+		while (++i < a->cmds_num - 1)
+			free(pfd[i]);
+		free(pfd);
+	}
+}
+
 void	execute_cmd(t_all *a)
 {
 	int		i;
@@ -106,5 +121,6 @@ void	execute_cmd(t_all *a)
 	}
 	wait_pid(a, pid);
 	free(pid);
+	free_pfd(a, &pfd);
 	printf("code : %d\n", g_res[0]);
 }

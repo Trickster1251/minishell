@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: aemustaf <marvin@42.fr>                    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2020/11/17 15:15:50 by aemustaf          #+#    #+#             */
-/*   Updated: 2020/11/17 15:16:03 by aemustaf         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "get_next_line.h"
 #include <stdio.h>
 #include <string.h>
@@ -49,9 +37,6 @@ static int	errors(char *buf)
 	return (-1);
 }
 
-<<<<<<< HEAD
-int			get_next_line(int fd, char **line)
-=======
 static int	ft_read_line(int fd, char **line, char **remainder, t_gnl *g)
 {
 	g->r_b = read(fd, g->buf, BUFFER_SIZE);
@@ -75,7 +60,6 @@ static int	ft_read_line(int fd, char **line, char **remainder, t_gnl *g)
 }
 
 int	get_next_line(int fd, char **line)
->>>>>>> 2c2409a31b7dd95ac73189618b7062f84b73cbc7
 {
 	t_gnl		g;
 	static char	*remainder;
@@ -83,25 +67,6 @@ int	get_next_line(int fd, char **line)
 	g.buf = NULL;
 	if (fd < 0 || !line || BUFFER_SIZE <= 0 || (read(fd, g.buf, 0) == -1))
 		return (-1);
-<<<<<<< HEAD
-	if (!(buf = (char*)malloc(sizeof(char) * (BUFFER_SIZE + 1))))
-		return (-1);
-	p_new = check_remainder(&remainder, line);
-	while (!p_new && (readed_byte = read(fd, buf, BUFFER_SIZE)))
-	{
-		buf[readed_byte] = '\0';
-		if ((p_new = my_strchr(buf, '\n')))
-		{
-			*p_new = '\0';
-			if (!(remainder = my_strdup(++p_new)))
-				return (errors(buf));
-		}
-		if (!(*line = my_strjoin(*line, buf)))
-			return (errors(buf));
-	}
-	free(buf);
-	return ((p_new || readed_byte) ? 1 : 0);
-=======
 	g.buf = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
 	if (!g.buf)
 		return (-1);
@@ -114,5 +79,4 @@ int	get_next_line(int fd, char **line)
 		return (1);
 	else
 		return (0);
->>>>>>> 2c2409a31b7dd95ac73189618b7062f84b73cbc7
 }
