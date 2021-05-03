@@ -1,9 +1,9 @@
 #include "../includes/minishell.h"
 
-char 	*get_env_val(t_list *envp, char *key)
+char	*get_env_val(t_list *envp, char *key)
 {
-	t_env *tmp;
-	t_list *tmp_list;
+	t_env	*tmp;
+	t_list	*tmp_list;
 
 	tmp_list = envp;
 	while (tmp_list)
@@ -16,11 +16,9 @@ char 	*get_env_val(t_list *envp, char *key)
 	return (NULL);
 }
 
-
-
-int		argv_len(char **argv)
+int	argv_len(char **argv)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (argv[i])
@@ -28,16 +26,15 @@ int		argv_len(char **argv)
 	return (i);
 }
 
-
-int		m_struct(t_all *all, char ***argv)
+int	m_struct(t_all *all, char ***argv)
 {
-	int i;
+	int	i;
 
-	all->cmds = (t_cmd*)malloc(sizeof(t_cmd) * all->cmds_num);
+	all->cmds = (t_cmd *)malloc(sizeof(t_cmd) * all->cmds_num);
 	if (!all->cmds)
-		return(print_merror(all));
+		return (print_merror(all));
 	i = 0;
-	while(i < all->cmds_num)
+	while (i < all->cmds_num)
 	{
 		all->cmds[i].args_num = argv_len(argv[i]);
 		all->cmds[i].argv = argv[i];
@@ -48,8 +45,8 @@ int		m_struct(t_all *all, char ***argv)
 
 void	free_cmd(t_all *all)
 {
-	int i;
-	int j;
+	int	i;
+	int	j;
 
 	i = 0;
 	if (all->cmds)
@@ -57,7 +54,7 @@ void	free_cmd(t_all *all)
 		while (i < all->cmds_num)
 		{
 			j = 0;
-			while(all->cmds[i].argv[j])
+			while (all->cmds[i].argv[j])
 			{
 				if (all->cmds[i].argv[j])
 					free(all->cmds[i].argv[j]);

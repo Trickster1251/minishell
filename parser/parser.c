@@ -1,13 +1,13 @@
 #include "../includes/minishell.h"
 
-int		parser(t_all *all)
+int	parser(t_all *all)
 {
-	t_line src;
+	t_line	src;
 	int		ret;
-	
+
 	if (all->hist == NULL || all->hist_len <= 0)
 		return (0);
-	ft_bzero(&all->val, sizeof(all->val));
+	ft_bzero(&all->v, sizeof(all->v));
 	src.str = ft_strdup(all->hist[all->hist_len - 1]);
 	src.len = ft_strlen(src.str);
 	src.pos = 0;
@@ -29,30 +29,30 @@ int		parser(t_all *all)
 	return (ret);
 }	
 
-int		make_cmd(t_all *all)
+int	make_cmd(t_all *all)
 {
-	char **cmds;
-	int i;
-	char *d_pointer;
-	char *end;
+	char	**cmds;
+	int		i;
+	char	*d_pointer;
+	char	*end;
 
-	i = 0;
-	d_pointer = NULL;
+	i = -1;
 	cmds = ft_split(all->src->str, ';');
-	while(cmds[i])
+	while (cmds[++i])
 	{
-		while ((d_pointer = ft_strchr(cmds[i], '$')))
+		d_pointer = ft_strchr(cmds[i], '$');
+		while (d_pointer)
 		{
 			end = end_var(d_pointer + 1);
 			if (!end)
-				return(print_merror(all));
+				return (print_merror(all));
 			cmds[i] = var_replace(all, cmds[i], d_pointer, end);
 			cmds[i] = if_no_var(all, cmds[i], d_pointer, end);
 			free(end);
+			d_pointer = ft_strchr(cmds[i], '$');
 		}
 		make_struct(all, cmds[i]);
 		free(cmds[i]);
-		i++;
 	}
 	free(cmds);
 	return (0);
@@ -60,10 +60,11 @@ int		make_cmd(t_all *all)
 
 char	*var_replace(t_all *all, char *str, char *d_pointer, char *end)
 {
-	char *tmp1;
-	char *tmp2;
+	char	*tmp1;
+	char	*tmp2;
 
-	if ((tmp2 = get_env_val(all->envp, end)))
+	tmp2 = get_env_val(all->envp, end);
+	if (tmp2)
 	{
 		tmp1 = ft_substr(str, 0, d_pointer - str);
 		tmp1 = my_strjoin(tmp1, tmp2);

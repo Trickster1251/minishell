@@ -59,8 +59,8 @@ typedef	struct s_line
 
 typedef struct s_valid
 {
-	int in_dqt;
-	int	in_qt;
+	int dqt;
+	int	qt;
 	int pipe;
 }t_valid;
 
@@ -84,10 +84,16 @@ typedef struct s_all
 	// Нужно инициализировать массив пайпов
 	int   *fd[2];
 	t_line *src;
-	t_valid val;
+	t_valid v;
 	
 } t_all;
 
+
+typedef struct s_redir
+{
+	int red;
+	int rev_red;
+} t_redir;
 // Функции логики
 
 //Глобальная переменная
@@ -106,7 +112,7 @@ void	ft_export_arg(t_cmd * cmd, t_all *a);
 // history
 int		read_history(t_all *all);
 int		save_history(t_all *all);
-int		hist_strjoin(t_all *all, char *str);
+int		hist_strjoin(t_all *all, char *str, int len);
 int		get_hist_array(t_all *all);
 int		new_line(t_all *all, char *str);
 int 	read_line(t_all *all, char *str);
@@ -206,7 +212,7 @@ void 	shield_sym(t_all *all, t_line *src);
 int 	is_right_syntax_pipes(t_line *src, t_all *all, int *k);
 int		is_right_redir_syntax(t_all *all, t_line *src, int *redir, int *rev_redir);
 int		is_right_revd_syntax(t_all *all, t_line *src, int *rev_redir, int *redir);
-char	prev_char(t_line *src);
+char	prev_c(t_line *src);
 char**	tokenize(char *str, t_all *all);
 char	**arg_join(t_all *all, char **argv, char *str);
 char	**realoc_argv(char **src);
@@ -215,5 +221,9 @@ int		print_merror(t_all *all);
 void	print_next(t_all *all);
 void	print_previus(t_all *all);
 int		remove_ch(t_line *src);
+int		print_syntax_err(char c);
+int		is_space_arg(char **str);
+void	init_tok(t_tok *tok, char *str);
+void	free_tok(t_tok *tok, char *str);
 
 #endif

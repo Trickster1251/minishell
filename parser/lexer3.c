@@ -1,8 +1,8 @@
 #include "../includes/minishell.h"
 
-int		remove_ch(t_line *src)
+int	remove_ch(t_line *src)
 {
-	char *tmp;
+	char	*tmp;
 
 	tmp = ft_strdup("");
 	if (!tmp)
@@ -11,7 +11,7 @@ int		remove_ch(t_line *src)
 	while (src->str[src->pos])
 	{
 		if (src->str[src->pos] != '\\' && src->str[src->pos] != '"'
-		&& src->str[src->pos] != '\'' && src->str[src->pos] != '\n')
+			&& src->str[src->pos] != '\'' && src->str[src->pos] != '\n')
 		{
 			tmp = ft_charjoin(tmp, src->str[src->pos]);
 			if (!tmp)
@@ -24,53 +24,63 @@ int		remove_ch(t_line *src)
 	return (0);
 }
 
-int		check_redir(char **argv)
+int	if_first_redir(char **argv)
 {
-	int i;
-	int red;
-	int rev_red;
+	int	i;
+	int	fd;
 
-	rev_red = 0;
-	red = 0;
-	i = 0;
 	i = argv_len(argv);
-	if ((!ft_strncmp(argv[0], "<", 2) || !ft_strncmp(argv[0], ">", 2)
-	|| !ft_strncmp(argv[0], "<<", 3) || !ft_strncmp(argv[0], ">>", 3)) && i == 2)
-		return (-1);
-	i = 0;
-	while (argv[i])
+	if ((!ft_strncmp(argv[0], ">", 2) || !ft_strncmp(argv[0], ">>", 3))
+		&& i == 2)
 	{
-		if (!ft_strncmp(argv[i], "<", 2) ||  !ft_strncmp(argv[i], "<<", 2))
+		fd = open(argv[1], O_CREAT | O_RDWR, 0777);
+		if (fd < 0)
 		{
-			rev_red++;
-			if (rev_red > 1 || red > 0)
-				{
-					printf("minishell: syntax error near unexpected token `<'\n");
-					return (-1);
-				}
+			printf("minishell: %s: No such file or directory", argv[1]);
+			gl_fd[0] = 1;
+		}
+		else
+			close (fd);
+		return (-1);
+	}
+	if ((!ft_strncmp(argv[0], "<", 2) || !ft_strncmp(argv[0], "<<", 3))
+		&& i == 2)
+		return (-1);
+	return (0);
+}
+
+int	check_redir(char **argv)
+{
+	int		i;
+	t_redir	r;
+
+	ft_bzero(&r, sizeof(r));
+	if (if_first_redir(argv) < 0)
+		return (-1);
+	i = -1;
+	while (argv[++i])
+	{
+		if (!ft_strncmp(argv[i], "<", 2) || !ft_strncmp(argv[i], "<<", 2))
+		{
+			r.rev_red++;
+			if (r.rev_red > 1 || r.red > 0)
+				return (print_syntax_err('<'));
 		}
 		else if (!ft_strncmp(argv[i], ">", 2) || !ft_strncmp(argv[i], ">>", 3))
 		{
-			red++;
-			if (red > 1 || rev_red > 0)
-				{
-					printf("minishell: syntax error near unexpected token `>'\n");
-					return (-1);
-				}
+			r.red++;
+			if (r.red > 1 || r.rev_red > 0)
+				return (print_syntax_err('>'));
 		}
 		else
-		{
-			rev_red = 0;
-			red = 0;
-		}
-		i++;
+			ft_bzero(&r, sizeof(r));
 	}
 	return (0);
 }
 
-int		check_sym(char *argv, int *k, char *c)
+int	check_sym(char *argv, int *k, char *c)
 {
-	int j;
+	int	j;
 
 	j = 0;
 	while (argv[j])
@@ -89,14 +99,16 @@ int		check_sym(char *argv, int *k, char *c)
 	return (j);
 }
 
-int		check_argv(t_all *all, char **argv)
+int	check_argv(t_all *all, char **argv)
 {
-	int i;
-	int k;
-	char c;
-	int j;
+	int		i;
+	int		k;
+	char	c;
+	int		j;
 
 	i = 0;
+	if (is_space_arg(argv) == 0 && all->cmds_num == 1)
+		return (-1);
 	while (argv[i])
 	{
 		k = 0;
@@ -104,7 +116,7 @@ int		check_argv(t_all *all, char **argv)
 		if (k == 1)
 		{	
 			printf("minishell: syntax error near unexpected token `%c'\n", c);
-			return(-1);
+			return (-1);
 		}
 		if (k == 2 || j == 0)
 		{

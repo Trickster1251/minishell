@@ -32,6 +32,8 @@ SRCS	=	./gnl/get_next_line.c \
 			./lists_utils.c \
 			./lists_utils1.c \
 			./func_utils.c \
+			./parser/lexer4.c \
+			./parser/lexer_utils.c \
 				
 FLAGS	=	-Wall -Wextra -Werror
 LIBFT	=	 -L./libft -lft

@@ -1,8 +1,8 @@
 #include "../includes/minishell.h"
 
-void free_argv(char **argv)
+void	free_argv(char **argv)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (argv[i])
@@ -13,7 +13,7 @@ void free_argv(char **argv)
 	free(argv);
 }
 
-void free_struct(t_all *all, char **argv, char ***cmds)
+void	free_struct(t_all *all, char **argv, char ***cmds)
 {
 	free(argv);
 	free(cmds);
@@ -22,19 +22,15 @@ void free_struct(t_all *all, char **argv, char ***cmds)
 
 char	*if_no_var(t_all *all, char *str, char *d_pointer, char *end)
 {
-	char *tmp1;
-	char *tmp2;
+	char	*tmp1;
+	char	*tmp2;
 
 	tmp2 = get_env_val(all->envp, end);
-
 	if (!tmp2)
 	{
 		tmp1 = ft_substr(str, 0, d_pointer - str);
 		if (!tmp1)
-		{
-			print_merror(all);
 			return (NULL);
-		}
 		if (ft_isalnum((int)*(d_pointer + 1)) || (char)*(d_pointer + 1) == '_')
 			tmp1 = my_strjoin(tmp1, after_var(d_pointer + 1));
 		else
@@ -53,27 +49,12 @@ char	*if_no_var(t_all *all, char *str, char *d_pointer, char *end)
 	return (str);
 }
 
-int		make_struct(t_all *all, char *str)
+int	get_tokens(t_all *all, char **argv, char ***cmds)
 {
-	char **argv;
-	int i;
-	char **new_argv;
-	char ***cmds;
+	int		i;
+	char	**new_argv;
 
 	i = 0;
-	argv = ft_split(str, '|');
-	if (!argv)
-		return (print_merror(all));
-	all->cmds_num = argv_len(argv);
-	if (check_argv(all, argv) < 0)
-	{
-		free_argv(argv);
-		return (-1);
-	}
-	cmds = (char***)malloc(sizeof(char**) * (all->cmds_num + 1));
-	if (!cmds)
-		return(print_merror(all));
-	cmds[all->cmds_num] = NULL;
 	while (argv[i])
 	{
 		new_argv = tokenize(argv[i], all);
@@ -89,7 +70,31 @@ int		make_struct(t_all *all, char *str)
 		cmds[i] = new_argv;
 		i++;
 	}
+	return (0);
+}
+
+int	make_struct(t_all *all, char *str)
+{
+	char	**argv;
+	int		i;
+	char	**new_argv;
+	char	***cmds;
+
 	i = 0;
+	argv = ft_split(str, '|');
+	if (!argv)
+		return (print_merror(all));
+	all->cmds_num = argv_len(argv);
+	if (check_argv(all, argv) < 0)
+	{
+		free_argv(argv);
+		return (-1);
+	}
+	cmds = (char ***)ft_calloc(all->cmds_num + 1, sizeof(char **));
+	if (!cmds)
+		return (print_merror(all));
+	if (get_tokens(all, argv, cmds) < 0)
+		return (-1);
 	if (m_struct(all, cmds) < 0)
 		return (print_merror(all));
 	execute_cmd(all);

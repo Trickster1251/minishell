@@ -1,6 +1,6 @@
 #include "../includes/minishell.h"
 
-int		new_line(t_all *all, char *str)
+int	new_line(t_all *all, char *str)
 {
 	t_list	*tmp;
 
@@ -17,40 +17,55 @@ int		new_line(t_all *all, char *str)
 	return (0);
 }
 
-int read_line(t_all *all, char *str)
+void	key_press(t_all *all, char *str)
 {
-	int len;
+	if (!ft_strncmp(str, "\e[A", 5))
+		up_arrow(all);
+	else if (!ft_strncmp(str, "\e[B", 5))
+		down_arrow(all);
+	else if (!ft_strncmp(str, "\177", 5))
+		backspace_key(all);
+}
+
+void	ctrl_c_term(t_all *all)
+{
+	canon(all);
+	write(1, "\n", 1);
+}
+
+int	is_arrow_backsp(char *str)
+{
+	if (!ft_strncmp(str, "\e[A", 5) || !ft_strncmp(str, "\e[B", 5)
+		|| !ft_strncmp(str, "\177", 5))
+		return (1);
+	return (0);
+}
+
+int	read_line(t_all *all, char *str)
+{
+	int	len;
 
 	while (ft_strncmp(str, "\n", 2))
 	{
 		len = read(0, str, 1000);
 		str[len] = 0;
-		if (!ft_strncmp(str, "\e[A", 5))
-			up_arrow(all);
-		else if (!ft_strncmp(str, "\e[B", 5))
-			down_arrow(all);
-		else if (!ft_strncmp(str, "\177", 5))
-			backspace_key(all);
+		if (is_arrow_backsp(str))
+			key_press(all, str);
 		else if (!ft_strncmp(str, "\e[D", 5))
-			continue;
+			continue ;
 		else if (!ft_strncmp(str, "\e[C", 5))
-			continue;
+			continue ;
 		else if (!ft_strncmp(str, "\4", 2) && ft_strlen(all->hist[all->pos]))
-			continue;
+			continue ;
 		else if (!ft_strncmp(str, "\4", 2) && !ft_strlen(all->hist[all->pos]))
 			ctrl_d_term(all);
 		else if (!ft_strncmp(str, "\03", 2))
 		{
-			canon(all);
-			write(1, "\n", 1);
-			break;
+			ctrl_c_term(all);
+			break ;
 		}
 		else
-		{
-			if (hist_strjoin(all, str) < 0)
-				return (-1);
-			write(1, str, len);
-		}
+			hist_strjoin(all, str, len);
 	}
 	return (0);
 }
