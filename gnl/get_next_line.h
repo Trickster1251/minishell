@@ -20,6 +20,13 @@
 #  define BUFFER_SIZE 10000
 # endif
 
+typedef struct s_gnl
+{
+	char	*buf;
+	char	*p_new;
+	int		r_b;
+}	t_gnl;
+
 char	*my_strjoin(char *s1, char *s2);
 int		get_next_line(int fd, char **line);
 char	*my_strdup(const char *s1);
