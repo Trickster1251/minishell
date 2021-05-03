@@ -33,7 +33,7 @@ int	**pipes_fd(t_all *a)
 
 	i = -1;
 	pfd = calloc(sizeof(int *), (a->cmds_num - 1));
-	while (++i < a->cmds_num)
+	while (++i < a->cmds_num - 1)
 	{
 		pfd[i] = malloc(sizeof(int) * 2);
 		pipe(pfd[i]);

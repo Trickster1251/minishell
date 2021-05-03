@@ -4,12 +4,13 @@
 
 static char	*check_remainder(char **remainder, char **line)
 {
-	char *p_new;
+	char	*p_new;
 
 	p_new = NULL;
 	if (*remainder)
 	{
-		if ((p_new = my_strchr(*remainder, '\n')))
+		p_new = my_strchr(*remainder, '\n');
+		if (p_new)
 		{
 			*p_new = '\0';
 			p_new++;
