@@ -127,6 +127,7 @@ void	ctrl_c(int sig);
 /* pipes */
 int		**pipes_fd(t_all *a);
 void	dup_fd(int **pfd, int i, int cmd_com, t_cmd *cmd);
+void	free_pfd(t_all *a, pid_t ***p);
 /* redirection */
 int		ft_redir(t_cmd *cmd, char **arr, int i, int count_redir);
 void	create_open_fd(t_all *a, t_cmd *cmd, char **arr);

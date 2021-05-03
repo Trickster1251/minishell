@@ -37,10 +37,15 @@ static int	errors(char *buf)
 	return (-1);
 }
 
-static int	ft_read_line(int fd, char **line, char **remainder, t_gnl *g)
+static int	my_read(int fd, t_gnl *g)
 {
 	g->r_b = read(fd, g->buf, BUFFER_SIZE);
-	while (!g->p_new && g->r_b)
+	return (g->r_b);
+}
+
+static int	ft_read_line(int fd, char **line, char **remainder, t_gnl *g)
+{
+	while (!g->p_new && my_read(fd, g))
 	{
 		g->buf[g->r_b] = '\0';
 		g->p_new = my_strchr(g->buf, '\n');
@@ -54,7 +59,6 @@ static int	ft_read_line(int fd, char **line, char **remainder, t_gnl *g)
 		*line = my_strjoin(*line, g->buf);
 		if (!(*line))
 			return (errors(g->buf));
-		g->r_b = read(fd, g->buf, BUFFER_SIZE);
 	}
 	return (g->r_b);
 }

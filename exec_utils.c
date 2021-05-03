@@ -38,3 +38,18 @@ char	*is_binary(int i, t_cmd *cmd, char **path)
 	free(comd);
 	return (NULL);
 }
+
+void	free_pfd(t_all *a, pid_t ***p)
+{
+	pid_t	**pfd;
+	int		i;
+
+	i = -1;
+	pfd = *p;
+	if (pfd != 0)
+	{
+		while (++i < a->cmds_num - 1)
+			free(pfd[i]);
+		free(pfd);
+	}
+}
