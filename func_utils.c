@@ -48,3 +48,17 @@ void	print_arr(char **arr)
 		write(1, "\n", 1);
 	}
 }
+
+int	is_valid_id(char *key)
+{
+	int	i;
+
+	i = 0;
+	while (key[i])
+	{
+		if (!ft_isalpha(key[i]) && key[i] != '_')
+			return (0);
+		i++;
+	}
+	return (1);
+}

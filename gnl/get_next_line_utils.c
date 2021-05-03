@@ -12,9 +12,9 @@
 
 #include "get_next_line.h"
 
-static int	my_strlen(const char *s)
+static int		my_strlen(const char *s)
 {
-	int	i;
+	int i;
 
 	i = 0;
 	while (s[i])
@@ -22,7 +22,7 @@ static int	my_strlen(const char *s)
 	return (i);
 }
 
-char	*my_strjoin(char *s1, char *s2)
+char			*my_strjoin(char *s1, char *s2)
 {
 	int		len;
 	int		i;
@@ -31,7 +31,7 @@ char	*my_strjoin(char *s1, char *s2)
 	if (!s1 || !s2)
 		return (NULL);
 	len = my_strlen(s1) + my_strlen(s2);
-	a = (char *)malloc((len + 1) * sizeof(char));
+	a = (char*)malloc((len + 1) * sizeof(char));
 	i = 0;
 	if (a == NULL)
 		return (NULL);
@@ -51,7 +51,7 @@ char	*my_strjoin(char *s1, char *s2)
 	return (a);
 }
 
-char	*my_strdup(const char *s1)
+char			*my_strdup(const char *s1)
 {
 	int		len;
 	char	*s2;
@@ -61,7 +61,7 @@ char	*my_strdup(const char *s1)
 	i = 0;
 	while (s1[len])
 		len++;
-	s2 = (char *)malloc((len + 1) * sizeof(char));
+	s2 = (char*)malloc((len + 1) * sizeof(char));
 	if (s2 == NULL)
 		return (NULL);
 	while (s1[i])
@@ -73,11 +73,11 @@ char	*my_strdup(const char *s1)
 	return (s2);
 }
 
-char	*my_strchr(const char *s, int c)
+char			*my_strchr(const char *s, int c)
 {
-	char	*s1;
+	char *s1;
 
-	s1 = (char *)s;
+	s1 = (char*)s;
 	if (c == 0)
 	{
 		while (*s1)

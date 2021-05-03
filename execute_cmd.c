@@ -25,7 +25,7 @@ char	*search_path(t_all *all, t_cmd *cmd, t_list *envp)
 	if (lstat(cmd->argv[0], &buf) == 0)
 		cmd->argv[0] = absolute_path(cmd);
 	printf("minishell: %s: command not found\n", cmd->argv[0]);
-	gl_fd[0] = 127;
+	g_res[0] = 127;
 	return (NULL);
 }
 
@@ -77,8 +77,8 @@ void	wait_pid(t_all *a, pid_t *pid)
 	{
 		waitpid(pid[i], &status, 0);
 		f = WSTOPSIG(status);
-		if (gl_fd[0] == 0 && f != 0)
-			gl_fd[0] = 2;
+		if (g_res[0] == 0 && f != 0)
+			g_res[0] = 2;
 	}
 }
 
@@ -106,5 +106,5 @@ void	execute_cmd(t_all *a)
 	}
 	wait_pid(a, pid);
 	free(pid);
-	printf("code : %d\n", gl_fd[0]);
+	printf("code : %d\n", g_res[0]);
 }

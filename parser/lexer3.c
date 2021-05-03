@@ -37,7 +37,7 @@ int	if_first_redir(char **argv)
 		if (fd < 0)
 		{
 			printf("minishell: %s: No such file or directory", argv[1]);
-			gl_fd[0] = 1;
+			g_res[0] = 1;
 		}
 		else
 			close (fd);

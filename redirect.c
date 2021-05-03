@@ -41,7 +41,7 @@ void	create_open_fd(t_all *a, t_cmd *cmd, char **arr)
 		{
 			printf("%s\n", strerror(errno));
 			errno = 0;
-			gl_fd[0] = 1;
+			g_res[0] = 1;
 			break ;
 		}
 	}

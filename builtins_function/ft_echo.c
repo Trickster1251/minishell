@@ -17,7 +17,7 @@ void	ft_echo(t_cmd *cmd)
 		while (cmd->argv[++i])
 		{
 			if (!ft_strncmp(cmd->argv[i], "$?\0", 3))
-				ft_putnbr_fd(gl_fd[0], cmd->fd[1]);
+				ft_putnbr_fd(g_res[0], cmd->fd[1]);
 			else
 				write(cmd->fd[1], cmd->argv[i], ft_strlen(cmd->argv[i]));
 			if (i != len_arr(cmd->argv) - 1)
@@ -26,5 +26,5 @@ void	ft_echo(t_cmd *cmd)
 	}
 	if (echo_flag == 0)
 		write(cmd->fd[1], "\n", 1);
-	gl_fd[0] = 0;
+	g_res[0] = 0;
 }
