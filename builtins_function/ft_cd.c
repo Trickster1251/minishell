@@ -33,7 +33,7 @@ void	change_dir(t_cmd *cmd, t_list *lst, t_list *exp, char *tmp)
 	if ((chdir(tmp)) == -1)
 	{
 		printf("minishell: cd: %s\n", strerror(errno));
-		gl_fd[0] = 1;
+		g_res[0] = 1;
 	}
 	else
 	{
@@ -55,12 +55,12 @@ void	ft_cd(t_cmd *cmd, t_list *lst, t_list *exp)
 		if (pwd == NULL)
 		{
 			printf("minishell: HOME not set\n");
-			gl_fd[0] = 1;
+			g_res[0] = 1;
 			return ;
 		}
 	}
 	change_dir(cmd, lst, exp, pwd);
 	if (pwd)
 		free(pwd);
-	gl_fd[0] = 0;
+	g_res[0] = 0;
 }

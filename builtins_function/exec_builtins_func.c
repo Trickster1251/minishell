@@ -9,7 +9,7 @@ void	exec_echo(t_all *a, pid_t *pid, int i, int **pfd)
 		ft_echo(a->cmds);
 		exit (0);
 	}
-	gl_fd[0] = 0;
+	g_res[0] = 0;
 }
 
 void	exec_pwd(t_all *a, pid_t *pid, int i, int **pfd)
@@ -19,7 +19,7 @@ void	exec_pwd(t_all *a, pid_t *pid, int i, int **pfd)
 	if (pid[i] == 0)
 	{
 		ft_pwd(a->cmds);
-		exit(gl_fd[0]);
+		exit(g_res[0]);
 	}
 }
 
@@ -34,7 +34,7 @@ void	exec_env(t_all *a, pid_t *pid, int i, int **pfd)
 		else
 		{
 			printf("env: %s: No such file or directory\n", a->cmds[i].argv[1]);
-			gl_fd[0] = 1;
+			g_res[0] = 1;
 		}
 		exit(0);
 	}

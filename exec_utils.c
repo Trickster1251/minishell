@@ -10,7 +10,7 @@ char	*absolute_path(t_cmd *cmd)
 		if (ft_strncmp("./", cmd->argv[0], 2))
 		{
 			printf("minishell: %s: command not found\n", cmd->argv[0]);
-			gl_fd[0] = 127;
+			g_res[0] = 127;
 			return (NULL);
 		}
 	}

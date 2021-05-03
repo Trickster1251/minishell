@@ -16,13 +16,12 @@
 
 static char	*check_remainder(char **remainder, char **line)
 {
-	char	*p_new;
+	char *p_new;
 
 	p_new = NULL;
 	if (*remainder)
 	{
-		p_new = my_strchr(*remainder, '\n');
-		if (p_new)
+		if ((p_new = my_strchr(*remainder, '\n')))
 		{
 			*p_new = '\0';
 			p_new++;
@@ -50,31 +49,6 @@ static int	errors(char *buf)
 	return (-1);
 }
 
-char	*return_buf(int fd, char *line, char **b)
-{
-	char	*buf;
-
-	buf = *b;
-	if (fd < 0 || !line || BUFFER_SIZE <= 0 || (read(fd, buf, 0) == -1))
-		return (NULL);
-	buf = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
-	if (!buf)
-		return (NULL);
-	return (buf);
-}
-
-// int	p_new_check(char *p_new, char *remainder, char *buf)
-// {
-// 	if (p_new)
-// 	{
-// 		*p_new = '\0';
-// 		remainder = my_strdup(++p_new);
-// 		if (!(remainder))
-// 			return (errors(buf));
-// 	}
-// 	return (1);
-// }
-
 int			get_next_line(int fd, char **line)
 {
 	char		*buf;
@@ -85,28 +59,21 @@ int			get_next_line(int fd, char **line)
 	buf = NULL;
 	if (fd < 0 || !line || BUFFER_SIZE <= 0 || (read(fd, buf, 0) == -1))
 		return (-1);
-	buf = (char*)malloc(sizeof(char) * (BUFFER_SIZE + 1));
-	if (buf == NULL)
+	if (!(buf = (char*)malloc(sizeof(char) * (BUFFER_SIZE + 1))))
 		return (-1);
 	p_new = check_remainder(&remainder, line);
-	readed_byte = read(fd, buf, BUFFER_SIZE);
-	while (!p_new && readed_byte)
+	while (!p_new && (readed_byte = read(fd, buf, BUFFER_SIZE)))
 	{
 		buf[readed_byte] = '\0';
-		p_new = my_strchr(buf, '\n');
-		if (p_new)
+		if ((p_new = my_strchr(buf, '\n')))
 		{
 			*p_new = '\0';
-			remainder = my_strdup(++p_new);
-			if (!remainder)
+			if (!(remainder = my_strdup(++p_new)))
 				return (errors(buf));
 		}
-		*line = my_strjoin(*line, buf);
-		if (!(*line))
+		if (!(*line = my_strjoin(*line, buf)))
 			return (errors(buf));
 	}
 	free(buf);
-	if (p_new || readed_byte)
-		return (1);
-	return (0);
+	return ((p_new || readed_byte) ? 1 : 0);
 }

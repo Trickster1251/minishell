@@ -14,6 +14,6 @@ void	ft_pwd(t_cmd *cmd)
 	else
 	{
 		printf("pwd: too many arguments\n");
-		gl_fd[0] = 1;
+		g_res[0] = 1;
 	}
 }
