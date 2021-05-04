@@ -13,4 +13,5 @@ void	print_env(t_list *lst)
 			printf("%s=%s\n", env->key, env->value);
 		tmp = tmp->next;
 	}
+	g_res[0] = 0;
 }

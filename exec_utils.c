@@ -9,8 +9,8 @@ char	*absolute_path(t_cmd *cmd)
 	{
 		if (ft_strncmp("./", cmd->argv[0], 2))
 		{
+			free(cmd->argv[0]);
 			printf("minishell: %s: command not found\n", cmd->argv[0]);
-			g_res[0] = 127;
 			return (NULL);
 		}
 	}
@@ -52,4 +52,10 @@ void	free_pfd(t_all *a, pid_t ***p)
 			free(pfd[i]);
 		free(pfd);
 	}
+}
+
+char	*found_binary(t_cmd *cmd)
+{
+	cmd->argv[0] = absolute_path(cmd);
+	return (cmd->argv[0]);
 }

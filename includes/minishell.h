@@ -111,6 +111,7 @@ int		new_line(t_all *all, char *str);
 int		read_line(t_all *all, char *str);
 void	ctrl_d_term(t_all *all);
 /* for execve */
+char	*found_binary(t_cmd *cmd);
 char	*absolute_path(t_cmd *cmd);
 char	*is_binary(int i, t_cmd *cmd, char **path);
 int		is_valid_id(char *key);
